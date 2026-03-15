@@ -1,0 +1,10 @@
+- Test copy / Move???
+- set outbox state
+- remove series -> metadata
+- only missing filter
+- docker, update, deploy
+- update/read config
+- filter LKS, consumed
+- auto save/backup state (git?)
+- collapse series in sidebar
+- pills clickable
