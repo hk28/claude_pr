@@ -6,7 +6,7 @@
     </div>
   </div>
   <div class="card-body">
-    <a href="/series/{{.Config.SlugName}}" class="card-title">{{.Config.Name}}</a>
+    <a href="/series/{{.Config.SlugName}}?view={{.ViewMode}}" class="card-title">{{.Config.Name}}</a>
     <div class="card-meta">
       {{range .Config.Types}}<span class="tag-{{.}} type-tag">{{.}}</span>{{end}}
       <span class="card-count">{{.TotalReleased}} released</span>

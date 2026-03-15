@@ -47,10 +47,12 @@ func ScanInbox(cfg config.SeriesConfig, mainCfg config.MainConfig) ([]ScanResult
 		}
 
 		for _, e := range entries {
+			// Match both directories and files (strip extension for files)
+			stem := e.Name()
 			if !e.IsDir() {
-				continue
+				stem = strings.TrimSuffix(stem, filepath.Ext(stem))
 			}
-			name := strings.ToLower(e.Name())
+			name := strings.ToLower(stem)
 			m := re.FindStringSubmatch(name)
 			if m == nil {
 				continue
@@ -74,13 +76,12 @@ func ScanInbox(cfg config.SeriesConfig, mainCfg config.MainConfig) ([]ScanResult
 // patternToRegexp converts a scanf-style pattern like "pr %.04d" to a regexp.
 // Supported verbs: %d, %.Nd (zero-padded decimal).
 func patternToRegexp(pattern string) (*regexp.Regexp, error) {
-	// Escape regex special characters except for the format verb
-	// Replace %d and %.Nd with a capture group
-	s := regexp.QuoteMeta(strings.ToLower(pattern))
-	// QuoteMeta escapes %, so we look for literal \%
-	// Replace \%\.\d+d and \%d with number capture group
-	padRe := regexp.MustCompile(`\\%\\\.0*\d*d`)
-	s = padRe.ReplaceAllString(s, `(\d+)`)
-	s = strings.ReplaceAll(s, `\%d`, `(\d+)`)
+	// Replace format verbs with a placeholder BEFORE QuoteMeta so the
+	// percent sign and dot don't interfere with regex escaping.
+	const placeholder = "__NUM__"
+	verbRe := regexp.MustCompile(`%\.?\d*d`)
+	s := verbRe.ReplaceAllString(strings.ToLower(pattern), placeholder)
+	s = regexp.QuoteMeta(s)
+	s = strings.ReplaceAll(s, placeholder, `(\d+)`)
 	return regexp.Compile("^" + s + "$")
 }

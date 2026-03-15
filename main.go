@@ -71,6 +71,21 @@ func loadTemplates() (*template.Template, error) {
 			}
 			return s
 		},
+		// dict creates a map from key-value pairs: {{dict "Key" val "Key2" val2}}
+		"dict": func(pairs ...any) (map[string]any, error) {
+			if len(pairs)%2 != 0 {
+				return nil, fmt.Errorf("dict requires even number of arguments")
+			}
+			m := make(map[string]any, len(pairs)/2)
+			for i := 0; i < len(pairs); i += 2 {
+				k, ok := pairs[i].(string)
+				if !ok {
+					return nil, fmt.Errorf("dict key must be string")
+				}
+				m[k] = pairs[i+1]
+			}
+			return m, nil
+		},
 	}
 
 	pattern := filepath.Join("templates", "**", "*.html")

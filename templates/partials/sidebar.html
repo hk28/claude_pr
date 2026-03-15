@@ -7,23 +7,7 @@
   <div class="sidebar-section">
     <div class="sidebar-label">Series</div>
     {{range .Series}}
-    <div class="sidebar-series" id="sidebar-{{.Config.SlugName}}">
-      <a href="/series/{{.Config.SlugName}}" class="sidebar-series-name">{{.Config.Name}}</a>
-      <div class="sidebar-series-meta">
-        {{range .Config.Types}}
-        <span class="sidebar-type-tag tag-{{.}}">{{.}}</span>
-        {{end}}
-        {{if gt .TotalReleased 0}}
-        <span class="sidebar-count">{{.TotalReleased}} released</span>
-        {{end}}
-      </div>
-      {{if or (gt .MissingAudio 0) (gt .MissingEbook 0)}}
-      <div class="sidebar-missing">
-        {{if gt .MissingAudio 0}}<span class="badge badge-warn">{{.MissingAudio}} audio pending</span>{{end}}
-        {{if gt .MissingEbook 0}}<span class="badge badge-warn">{{.MissingEbook}} ebook pending</span>{{end}}
-      </div>
-      {{end}}
-    </div>
+    {{template "sidebar_series" .}}
     {{end}}
   </div>
 </nav>
@@ -33,15 +17,15 @@
 <div class="sidebar-series" id="sidebar-{{.Config.SlugName}}">
   <a href="/series/{{.Config.SlugName}}" class="sidebar-series-name">{{.Config.Name}}</a>
   <div class="sidebar-series-meta">
-    {{range .Config.Types}}
-    <span class="sidebar-type-tag tag-{{.}}">{{.}}</span>
-    {{end}}
-    {{if gt .TotalReleased 0}}
-    <span class="sidebar-count">{{.TotalReleased}} released</span>
-    {{end}}
+    {{range .Config.Types}}<span class="sidebar-type-tag tag-{{.}}">{{.}}</span>{{end}}
+    {{if gt .TotalReleased 0}}<span class="sidebar-count">{{.TotalReleased}} released</span>{{end}}
   </div>
-  {{if or (gt .MissingAudio 0) (gt .MissingEbook 0)}}
+  {{$missingReleased := or (gt .MissingReleasedAudio 0) (gt .MissingReleasedEbook 0)}}
+  {{$pendingCopy    := or (gt .MissingAudio 0) (gt .MissingEbook 0)}}
+  {{if or $missingReleased $pendingCopy}}
   <div class="sidebar-missing">
+    {{if gt .MissingReleasedAudio 0}}<span class="badge badge-error">{{.MissingReleasedAudio}} audio missing</span>{{end}}
+    {{if gt .MissingReleasedEbook 0}}<span class="badge badge-error">{{.MissingReleasedEbook}} ebook missing</span>{{end}}
     {{if gt .MissingAudio 0}}<span class="badge badge-warn">{{.MissingAudio}} audio pending</span>{{end}}
     {{if gt .MissingEbook 0}}<span class="badge badge-warn">{{.MissingEbook}} ebook pending</span>{{end}}
   </div>

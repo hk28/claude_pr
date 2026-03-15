@@ -27,6 +27,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /series/{slug}", s.handleSeriesDetail)
 	mux.HandleFunc("POST /series/{slug}/scan", s.handleScan)
 	mux.HandleFunc("POST /series/{slug}/update", s.handleUpdate)
+	mux.HandleFunc("POST /series/{slug}/refresh-metadata", s.handleRefreshMetadata)
 	mux.HandleFunc("GET /series/{slug}/copy-preview", s.handleCopyPreview)
 	mux.HandleFunc("POST /series/{slug}/copy", s.handleCopy)
 	mux.HandleFunc("POST /series/{slug}/issue/{num}/state", s.handleToggleState)
@@ -39,6 +40,7 @@ func (s *Server) buildPageVM(viewMode, filterSlug, filterType string, onlyMissin
 	for _, cfg := range s.series {
 		st, _ := s.proc.State.Load(cfg.SlugName)
 		vm := BuildSeriesVM(cfg, st, s.proc.Cache)
+		vm.ViewMode = viewMode
 		vms = append(vms, vm)
 	}
 	return PageVM{
@@ -65,7 +67,6 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 
 	vm := s.buildPageVM(viewMode, filterSlug, filterType, onlyMissing)
 
-	// HTMX partial swap for main content only
 	if r.Header.Get("HX-Request") == "true" && r.Header.Get("HX-Target") == "main-content" {
 		s.renderPartial(w, "main_content", vm)
 		return
@@ -80,9 +81,14 @@ func (s *Server) handleSeriesDetail(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	viewMode := r.URL.Query().Get("view")
+	if viewMode == "" {
+		viewMode = "details"
+	}
 	st, _ := s.proc.State.Load(slug)
 	svm := BuildSeriesVM(cfg, st, s.proc.Cache)
-	page := s.buildPageVM("details", slug, "", false)
+	svm.ViewMode = viewMode
+	page := s.buildPageVM(viewMode, slug, "", false)
 	page.CurrentSeries = &svm
 	s.renderPage(w, "series_detail.html", page)
 }
@@ -101,6 +107,16 @@ func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	report, err := s.proc.Update(slug)
 	s.renderPartial(w, "update_result", map[string]any{
+		"Report": report,
+		"Error":  errStr(err),
+		"Slug":   slug,
+	})
+}
+
+func (s *Server) handleRefreshMetadata(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	report, err := s.proc.RefreshMetadata(slug)
+	s.renderPartial(w, "refresh_result", map[string]any{
 		"Report": report,
 		"Error":  errStr(err),
 		"Slug":   slug,

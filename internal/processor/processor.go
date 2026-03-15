@@ -38,9 +38,10 @@ func (p *Processor) SeriesBySlug(slug string) (config.SeriesConfig, bool) {
 
 // ScanReport summarizes the result of a Scan operation.
 type ScanReport struct {
-	Found    []scanner.ScanResult
-	Fetched  []int  // issue numbers newly cached
-	Errors   []string
+	Found       []scanner.ScanResult
+	Fetched     []int    // issue numbers newly cached
+	Errors      []string
+	ScannedDirs []string // inbox directories that were searched
 }
 
 // Scan scans the inbox for a series, fetches missing metadata, and updates state.
@@ -51,6 +52,19 @@ func (p *Processor) Scan(seriesSlug string) (ScanReport, error) {
 	}
 
 	var report ScanReport
+
+	for _, loc := range cfg.Locations {
+		var dir string
+		switch loc.What {
+		case "audio":
+			dir = filepath.Join(p.Main.InboxAudio, cfg.Name)
+		case "ebook":
+			dir = filepath.Join(p.Main.InboxEbook, cfg.Name)
+		}
+		if dir != "" {
+			report.ScannedDirs = append(report.ScannedDirs, dir)
+		}
+	}
 
 	results, err := scanner.ScanInbox(cfg, p.Main)
 	if err != nil {
@@ -88,11 +102,14 @@ func (p *Processor) Scan(seriesSlug string) (ScanReport, error) {
 
 // UpdateReport summarizes the result of an Update operation.
 type UpdateReport struct {
-	LatestIssue int
-	MarkedCount int
+	LatestIssue  int
+	MarkedCount  int
+	Fetched      []int    // issue numbers newly fetched during update
+	FetchErrors  []string
 }
 
-// Update calculates which issues should be released and marks them in state.
+// Update calculates which issues should be released, marks them in state,
+// and auto-fetches metadata for newly released issues that are not yet cached.
 func (p *Processor) Update(seriesSlug string) (UpdateReport, error) {
 	cfg, ok := p.SeriesBySlug(seriesSlug)
 	if !ok {
@@ -104,18 +121,71 @@ func (p *Processor) Update(seriesSlug string) (UpdateReport, error) {
 		latest = calcLatest(cfg)
 	}
 
-	var count int
+	var report UpdateReport
+	report.LatestIssue = latest
+
 	for n := cfg.ScanFrom; n <= latest; n++ {
 		if err := p.State.EnsureIssue(seriesSlug, n, cfg.States); err != nil {
-			return UpdateReport{}, err
+			return report, err
 		}
 		if err := p.State.SetState(seriesSlug, n, "Released", true); err != nil {
-			return UpdateReport{}, err
+			return report, err
 		}
-		count++
+		report.MarkedCount++
+
+		// Auto-fetch metadata for this issue if not yet cached
+		if !p.Cache.Exists(seriesSlug, n) {
+			issue, err := p.Scraper.FetchIssue(cfg, n)
+			if err != nil {
+				report.FetchErrors = append(report.FetchErrors, fmt.Sprintf("#%d: %v", n, err))
+				continue
+			}
+			if err := p.Cache.Set(seriesSlug, issue); err != nil {
+				report.FetchErrors = append(report.FetchErrors, fmt.Sprintf("#%d cache: %v", n, err))
+				continue
+			}
+			report.Fetched = append(report.Fetched, n)
+		}
 	}
 
-	return UpdateReport{LatestIssue: latest, MarkedCount: count}, nil
+	return report, nil
+}
+
+// RefreshReport summarizes the result of a RefreshMetadata operation.
+type RefreshReport struct {
+	Fetched []int
+	Errors  []string
+}
+
+// RefreshMetadata re-fetches metadata for all released issues, overwriting the cache.
+func (p *Processor) RefreshMetadata(seriesSlug string) (RefreshReport, error) {
+	cfg, ok := p.SeriesBySlug(seriesSlug)
+	if !ok {
+		return RefreshReport{}, fmt.Errorf("unknown series: %s", seriesSlug)
+	}
+
+	st, err := p.State.Load(seriesSlug)
+	if err != nil {
+		return RefreshReport{}, err
+	}
+
+	var report RefreshReport
+	for _, is := range st.Issues {
+		if !is.States["Released"] {
+			continue
+		}
+		issue, err := p.Scraper.FetchIssue(cfg, is.Number)
+		if err != nil {
+			report.Errors = append(report.Errors, fmt.Sprintf("#%d: %v", is.Number, err))
+			continue
+		}
+		if err := p.Cache.Set(seriesSlug, issue); err != nil {
+			report.Errors = append(report.Errors, fmt.Sprintf("#%d cache: %v", is.Number, err))
+			continue
+		}
+		report.Fetched = append(report.Fetched, is.Number)
+	}
+	return report, nil
 }
 
 // calcLatest calculates the latest released issue number based on anchor + interval.

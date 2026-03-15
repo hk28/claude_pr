@@ -25,13 +25,22 @@ type IssueVM struct {
 	CacheExists bool
 }
 
+// IssueCardVM wraps an IssueVM with series context needed by issue card templates.
+type IssueCardVM struct {
+	Issue IssueVM
+	Slug  string
+}
+
 // SeriesVM is the per-series view model.
 type SeriesVM struct {
-	Config        config.SeriesConfig
-	Issues        []IssueVM
-	MissingAudio  int
-	MissingEbook  int
-	TotalReleased int
+	Config               config.SeriesConfig
+	Issues               []IssueVM
+	MissingAudio         int // in inbox, not yet copied to output
+	MissingEbook         int
+	MissingReleasedAudio int // released but not yet in inbox
+	MissingReleasedEbook int
+	TotalReleased        int
+	ViewMode             string // inherited from page context
 }
 
 // PageVM is the top-level view model for all pages (index + series detail).
@@ -53,7 +62,9 @@ type cacheGetter interface {
 func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter) SeriesVM {
 	vm := SeriesVM{Config: cfg}
 
-	// Collect and sort issue numbers
+	hasAudio := containsType(cfg.Types, "audio")
+	hasEbook := containsType(cfg.Types, "ebook")
+
 	var sorted []int
 	seen := map[int]bool{}
 	for _, is := range st.Issues {
@@ -86,16 +97,32 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 			iv.CacheExists = true
 		}
 
+		released := is.States["Released"]
+		if released {
+			vm.TotalReleased++
+			if hasAudio && is.InboxAudio == "" && is.OutputAudio == "" {
+				vm.MissingReleasedAudio++
+			}
+			if hasEbook && is.InboxEbook == "" && is.OutputEbook == "" {
+				vm.MissingReleasedEbook++
+			}
+		}
 		if is.InboxAudio != "" && is.OutputAudio == "" {
 			vm.MissingAudio++
 		}
 		if is.InboxEbook != "" && is.OutputEbook == "" {
 			vm.MissingEbook++
 		}
-		if is.States["Released"] {
-			vm.TotalReleased++
-		}
 		vm.Issues = append(vm.Issues, iv)
 	}
 	return vm
+}
+
+func containsType(types []string, t string) bool {
+	for _, v := range types {
+		if v == t {
+			return true
+		}
+	}
+	return false
 }

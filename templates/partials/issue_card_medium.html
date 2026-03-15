@@ -1,0 +1,30 @@
+{{define "issue_card_medium"}}
+{{$issue := .Issue}}
+<div class="card card-medium{{if not (index $issue.States "Released")}} card-unreleased{{end}}">
+  <div class="card-cover-wrap card-cover-sm">
+    <div class="card-cover card-cover-placeholder">
+      <span class="cover-num">#{{$issue.Number}}</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <span class="card-title">{{if $issue.Title}}{{$issue.Title}}{{else}}#{{$issue.Number}}{{end}}</span>
+    <div class="card-meta">
+      <span class="card-count">#{{$issue.Number}}</span>
+      {{if $issue.Author}}<span class="card-author">{{$issue.Author}}</span>{{end}}
+      {{if $issue.ReleaseDate}}<span class="card-date">{{$issue.ReleaseDate}}</span>{{end}}
+    </div>
+    {{if $issue.SubSeries}}<div class="card-latest">{{$issue.SubSeries}}</div>{{end}}
+    <div class="card-states">
+      {{range $name := $issue.StateNames}}
+      {{$val := index $issue.States $name}}
+      <span class="state-pill{{if $val}} state-pill-active{{else}} state-pill-inactive{{end}}">{{$name}}</span>
+      {{end}}
+    </div>
+    <div class="card-meta" style="margin-top:6px">
+      {{if $issue.InboxAudio}}<span class="badge badge-ok">audio</span>{{end}}
+      {{if $issue.InboxEbook}}<span class="badge badge-ok">ebook</span>{{end}}
+      {{if $issue.OutputAudio}}<span class="badge badge-done">copied</span>{{end}}
+    </div>
+  </div>
+</div>
+{{end}}

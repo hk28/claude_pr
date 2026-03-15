@@ -1,10 +1,19 @@
 {{define "series_detail"}}
 {{$slug := .Config.SlugName}}
+{{$view := .ViewMode}}
 <div class="series-detail">
   <div class="detail-header">
     <h2>{{.Config.Name}}</h2>
     <div class="detail-types">
       {{range .Config.Types}}<span class="tag-{{.}} type-tag">{{.}}</span>{{end}}
+    </div>
+    <div class="detail-view-tabs">
+      <a class="view-btn{{if eq $view "big"}} active{{end}}"
+         href="/series/{{$slug}}?view=big">Big</a>
+      <a class="view-btn{{if eq $view "medium"}} active{{end}}"
+         href="/series/{{$slug}}?view=medium">Medium</a>
+      <a class="view-btn{{if eq $view "details"}} active{{end}}"
+         href="/series/{{$slug}}?view=details">Details</a>
     </div>
     <div class="detail-actions">
       <button class="btn btn-primary"
@@ -22,6 +31,13 @@
         Update Released
       </button>
       <button class="btn btn-secondary"
+              hx-post="/series/{{$slug}}/refresh-metadata"
+              hx-target="#action-result"
+              hx-swap="innerHTML"
+              hx-confirm="Re-fetch metadata for all released issues? This may take a while.">
+        Update Metadata
+      </button>
+      <button class="btn btn-secondary"
               hx-get="/series/{{$slug}}/copy-preview"
               hx-target="#action-result"
               hx-swap="innerHTML">
@@ -32,19 +48,29 @@
 
   <div id="action-result" class="action-result"></div>
 
+  {{if eq $view "big"}}
+  <div class="cards-grid cards-big">
+    {{range .Issues}}{{if (index .States "Released")}}
+    {{template "issue_card_big" (dict "Issue" . "Slug" $slug)}}
+    {{end}}{{end}}
+  </div>
+
+  {{else if eq $view "medium"}}
+  <div class="cards-grid cards-medium">
+    {{range .Issues}}{{if (index .States "Released")}}
+    {{template "issue_card_medium" (dict "Issue" . "Slug" $slug)}}
+    {{end}}{{end}}
+  </div>
+
+  {{else}}
   {{if .Issues}}
   <div class="table-wrap">
     <table class="issue-table">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Date</th>
-          <th>SubSeries</th>
+          <th>#</th><th>Title</th><th>Author</th><th>Date</th><th>SubSeries</th>
           {{range .Config.States}}<th>{{.}}</th>{{end}}
-          <th>Inbox</th>
-          <th>Output</th>
+          <th>Inbox</th><th>Output</th>
         </tr>
       </thead>
       <tbody>
@@ -52,23 +78,17 @@
         {{$issue := .}}
         <tr class="issue-row{{if not (index .States "Released")}} issue-unreleased{{end}}">
           <td class="col-num">{{.Number}}</td>
-          <td class="col-title">
-            {{if .Title}}{{.Title}}{{else}}<span class="text-muted">—</span>{{end}}
-          </td>
+          <td class="col-title">{{if .Title}}{{.Title}}{{else}}<span class="text-muted">—</span>{{end}}</td>
           <td class="col-author">{{if .Author}}{{.Author}}{{else}}—{{end}}</td>
           <td class="col-date">{{if .ReleaseDate}}{{.ReleaseDate}}{{else}}—{{end}}</td>
           <td class="col-subseries">{{if .SubSeries}}{{.SubSeries}}{{else}}—{{end}}</td>
           {{range $name := .StateNames}}
           {{$val := index $issue.States $name}}
           <td class="col-state">
-            <input type="checkbox"
-                   class="state-checkbox"
-                   {{if $val}}checked{{end}}
+            <input type="checkbox" class="state-checkbox" {{if $val}}checked{{end}}
                    hx-post="/series/{{$slug}}/issue/{{$issue.Number}}/state"
                    hx-vals='{"state":"{{$name}}","value":"{{if $val}}false{{else}}true{{end}}"}'
-                   hx-target="#sidebar-{{$slug}}"
-                   hx-swap="outerHTML"
-                   title="{{$name}}">
+                   hx-target="#sidebar-{{$slug}}" hx-swap="outerHTML" title="{{$name}}">
           </td>
           {{end}}
           <td class="col-inbox">
@@ -88,6 +108,7 @@
   <div class="empty-state">
     <p>No issues tracked yet. Run <strong>Scan Inbox</strong> or <strong>Update Released</strong> to populate.</p>
   </div>
-  {{end}}
+  {{end}}{{end}}
+
 </div>
 {{end}}

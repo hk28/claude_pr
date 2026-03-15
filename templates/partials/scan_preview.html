@@ -4,6 +4,14 @@
   <div class="error-box">Error: {{.Error}}</div>
   {{else}}
   <h4>Scan Complete</h4>
+  {{if .Report.ScannedDirs}}
+  <div class="scan-dirs">
+    <span class="scan-dirs-label">Searched:</span>
+    {{range .Report.ScannedDirs}}
+    <code class="path">{{.}}</code>
+    {{end}}
+  </div>
+  {{end}}
   <p>Found <strong>{{len .Report.Found}}</strong> inbox items,
      fetched metadata for <strong>{{len .Report.Fetched}}</strong> new issues.</p>
   {{if .Report.Found}}
@@ -32,6 +40,33 @@
   <h4>Update Complete</h4>
   <p>Latest issue: <strong>#{{.Report.LatestIssue}}</strong>.
      Marked <strong>{{.Report.MarkedCount}}</strong> issues as Released.</p>
+  {{if .Report.Fetched}}
+  <p>Auto-fetched metadata for <strong>{{len .Report.Fetched}}</strong> new issue(s):
+    {{range .Report.Fetched}}<span class="badge badge-ok">#{{.}}</span> {{end}}</p>
+  {{end}}
+  {{if .Report.FetchErrors}}
+  <div class="error-list">
+    <strong>Fetch errors:</strong>
+    <ul>{{range .Report.FetchErrors}}<li>{{.}}</li>{{end}}</ul>
+  </div>
+  {{end}}
+  {{end}}
+</div>
+{{end}}
+
+{{define "refresh_result"}}
+<div class="action-card">
+  {{if .Error}}
+  <div class="error-box">Error: {{.Error}}</div>
+  {{else}}
+  <h4>Metadata Updated</h4>
+  <p>Refreshed <strong>{{len .Report.Fetched}}</strong> issue(s).</p>
+  {{if .Report.Errors}}
+  <div class="error-list">
+    <strong>Errors:</strong>
+    <ul>{{range .Report.Errors}}<li>{{.}}</li>{{end}}</ul>
+  </div>
+  {{end}}
   {{end}}
 </div>
 {{end}}
