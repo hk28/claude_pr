@@ -3,8 +3,11 @@ package processor
 import (
 	"fmt"
 	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/hk28/prman/internal/cache"
@@ -34,6 +37,64 @@ func (p *Processor) SeriesBySlug(slug string) (config.SeriesConfig, bool) {
 		}
 	}
 	return config.SeriesConfig{}, false
+}
+
+// scrapeAndCache fetches issue metadata, downloads the cover image locally,
+// and writes the JSON cache entry. Returns the saved issue.
+func (p *Processor) scrapeAndCache(slug string, cfg config.SeriesConfig, number int) (cache.ScrapedIssue, error) {
+	issue, err := p.Scraper.FetchIssue(cfg, number)
+	if err != nil {
+		return issue, err
+	}
+	if issue.CoverURL != "" {
+		issue.CoverURL = p.downloadCover(slug, number, issue.CoverURL)
+	}
+	return issue, p.Cache.Set(slug, issue)
+}
+
+// downloadCover fetches the remote cover image and stores it under CoversDir.
+// Returns the local URL path ("/covers/<slug>/<n>.<ext>") on success,
+// or the original remote URL if the download fails.
+func (p *Processor) downloadCover(slug string, number int, remoteURL string) string {
+	u, err := url.Parse(remoteURL)
+	if err != nil {
+		return remoteURL
+	}
+	ext := strings.ToLower(filepath.Ext(u.Path))
+	if ext == "" {
+		ext = ".jpg"
+	}
+
+	resp, err := http.Get(remoteURL)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		if resp != nil {
+			resp.Body.Close()
+		}
+		return remoteURL
+	}
+	defer resp.Body.Close()
+
+	dir := filepath.Join(p.Cache.CoversDir, slug)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return remoteURL
+	}
+
+	dst := filepath.Join(dir, fmt.Sprintf("%d%s", number, ext))
+	f, err := os.Create(dst)
+	if err != nil {
+		return remoteURL
+	}
+	defer f.Close()
+	if _, err := io.Copy(f, resp.Body); err != nil {
+		os.Remove(dst)
+		return remoteURL
+	}
+	return fmt.Sprintf("/covers/%s/%d%s", slug, number, ext)
+}
+
+// ClearCache deletes the JSON metadata cache and cover images for a series.
+func (p *Processor) ClearCache(slug string) error {
+	return p.Cache.DeleteAll(slug)
 }
 
 // ScanReport summarizes the result of a Scan operation.
@@ -84,13 +145,8 @@ func (p *Processor) Scan(seriesSlug string) (ScanReport, error) {
 		}
 		// Fetch metadata if not cached
 		if !p.Cache.Exists(seriesSlug, r.Number) {
-			issue, err := p.Scraper.FetchIssue(cfg, r.Number)
-			if err != nil {
+			if _, err := p.scrapeAndCache(seriesSlug, cfg, r.Number); err != nil {
 				report.Errors = append(report.Errors, fmt.Sprintf("fetch #%d: %v", r.Number, err))
-				continue
-			}
-			if err := p.Cache.Set(seriesSlug, issue); err != nil {
-				report.Errors = append(report.Errors, fmt.Sprintf("cache #%d: %v", r.Number, err))
 				continue
 			}
 			report.Fetched = append(report.Fetched, r.Number)
@@ -135,13 +191,8 @@ func (p *Processor) Update(seriesSlug string) (UpdateReport, error) {
 
 		// Auto-fetch metadata for this issue if not yet cached
 		if !p.Cache.Exists(seriesSlug, n) {
-			issue, err := p.Scraper.FetchIssue(cfg, n)
-			if err != nil {
+			if _, err := p.scrapeAndCache(seriesSlug, cfg, n); err != nil {
 				report.FetchErrors = append(report.FetchErrors, fmt.Sprintf("#%d: %v", n, err))
-				continue
-			}
-			if err := p.Cache.Set(seriesSlug, issue); err != nil {
-				report.FetchErrors = append(report.FetchErrors, fmt.Sprintf("#%d cache: %v", n, err))
 				continue
 			}
 			report.Fetched = append(report.Fetched, n)
@@ -174,13 +225,8 @@ func (p *Processor) RefreshMetadata(seriesSlug string) (RefreshReport, error) {
 		if !is.States["Released"] {
 			continue
 		}
-		issue, err := p.Scraper.FetchIssue(cfg, is.Number)
-		if err != nil {
+		if _, err := p.scrapeAndCache(seriesSlug, cfg, is.Number); err != nil {
 			report.Errors = append(report.Errors, fmt.Sprintf("#%d: %v", is.Number, err))
-			continue
-		}
-		if err := p.Cache.Set(seriesSlug, issue); err != nil {
-			report.Errors = append(report.Errors, fmt.Sprintf("#%d cache: %v", is.Number, err))
 			continue
 		}
 		report.Fetched = append(report.Fetched, is.Number)

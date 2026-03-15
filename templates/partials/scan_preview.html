@@ -70,3 +70,15 @@
   {{end}}
 </div>
 {{end}}
+
+{{define "clear_cache_result"}}
+<div class="action-card">
+  {{if .Error}}
+  <div class="error-box">Error: {{.Error}}</div>
+  {{else}}
+  <h4>Cache Cleared</h4>
+  <p>Metadata and cover images for <strong>{{.Slug}}</strong> deleted.
+     Use <em>Update Metadata</em> or <em>Scan Inbox</em> to re-fetch.</p>
+  {{end}}
+</div>
+{{end}}

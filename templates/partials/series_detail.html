@@ -43,6 +43,13 @@
               hx-swap="innerHTML">
         Copy Preview
       </button>
+      <button class="btn btn-danger"
+              hx-post="/series/{{$slug}}/clear-cache"
+              hx-target="#action-result"
+              hx-swap="innerHTML"
+              hx-confirm="Delete all cached metadata and cover images for this series?">
+        Clear Cache
+      </button>
     </div>
   </div>
 

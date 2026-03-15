@@ -25,11 +25,13 @@ type ScrapedIssue struct {
 }
 
 type Cache struct {
-	BaseDir string
+	BaseDir   string
+	CoversDir string // data/covers/<slug>/<number>.<ext>
 }
 
 func New(baseDir string) *Cache {
-	return &Cache{BaseDir: baseDir}
+	coversDir := filepath.Join(filepath.Dir(baseDir), "covers")
+	return &Cache{BaseDir: baseDir, CoversDir: coversDir}
 }
 
 func (c *Cache) path(slug string, number int) string {
@@ -63,6 +65,26 @@ func (c *Cache) Set(slug string, issue ScrapedIssue) error {
 		return err
 	}
 	return os.WriteFile(c.path(slug, issue.Number), data, 0644)
+}
+
+// CoverImageExists returns (localURL, true) if a cover image file exists for the issue.
+func (c *Cache) CoverImageExists(slug string, number int) (string, bool) {
+	dir := filepath.Join(c.CoversDir, slug)
+	matches, _ := filepath.Glob(filepath.Join(dir, fmt.Sprintf("%d.*", number)))
+	if len(matches) == 0 {
+		return "", false
+	}
+	// Return as a URL path
+	rel := filepath.ToSlash(filepath.Base(matches[0]))
+	return fmt.Sprintf("/covers/%s/%s", slug, rel), true
+}
+
+// DeleteAll removes the JSON cache and cover images for a series.
+func (c *Cache) DeleteAll(slug string) error {
+	if err := os.RemoveAll(filepath.Join(c.BaseDir, slug)); err != nil {
+		return err
+	}
+	return os.RemoveAll(filepath.Join(c.CoversDir, slug))
 }
 
 func (c *Cache) List(slug string) ([]int, error) {

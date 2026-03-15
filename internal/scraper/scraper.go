@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -37,6 +38,7 @@ func (s *Scraper) FetchIssue(cfg config.SeriesConfig, number int) (cache.Scraped
 	s.lastRequest = time.Now()
 
 	url := fmt.Sprintf(cfg.URL, number)
+	log.Printf("scraping %s #%d ...", cfg.Name, number)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return cache.ScrapedIssue{}, err
@@ -77,6 +79,7 @@ func (s *Scraper) FetchIssue(cfg config.SeriesConfig, number int) (cache.Scraped
 		SourceURL:   finalURL,
 		CachedAt:    time.Now(),
 	}
+	log.Printf("scraped %s #%d: title=%q date=%s", cfg.Name, number, issue.Title, issue.ReleaseDate)
 
 	// Put any non-standard fields into Extra
 	standardNames := map[string]bool{"Title": true, "Description": true, "Author": true, "ReleaseDate": true, "SubSeries": true}
@@ -94,8 +97,13 @@ func (s *Scraper) FetchIssue(cfg config.SeriesConfig, number int) (cache.Scraped
 
 // extractField walks the HTML tree looking for a <td> whose text equals alias,
 // then returns the text of the next sibling <td> in the same <tr>.
+// normalizeText replaces non-breaking spaces (&#160; / \u00A0) with regular spaces.
+func normalizeText(s string) string {
+	return strings.TrimSpace(strings.ReplaceAll(s, "\u00A0", " "))
+}
+
 func extractField(doc *html.Node, alias string) string {
-	alias = strings.TrimSpace(alias)
+	alias = normalizeText(alias)
 	var result string
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
@@ -111,8 +119,8 @@ func extractField(doc *html.Node, alias string) string {
 				}
 			}
 			for i, cell := range cells {
-				if strings.TrimSpace(textContent(cell)) == alias && i+1 < len(cells) {
-					result = strings.TrimSpace(textContent(cells[i+1]))
+				if normalizeText(textContent(cell)) == alias && i+1 < len(cells) {
+					result = normalizeText(textContent(cells[i+1]))
 					return
 				}
 			}

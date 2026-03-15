@@ -32,6 +32,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /series/{slug}/copy", s.handleCopy)
 	mux.HandleFunc("POST /series/{slug}/issue/{num}/state", s.handleToggleState)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	mux.Handle("GET /covers/", http.StripPrefix("/covers/", http.FileServer(http.Dir(s.proc.Cache.CoversDir))))
+	mux.HandleFunc("POST /series/{slug}/clear-cache", s.handleClearCache)
 	return mux
 }
 
@@ -120,6 +122,15 @@ func (s *Server) handleRefreshMetadata(w http.ResponseWriter, r *http.Request) {
 		"Report": report,
 		"Error":  errStr(err),
 		"Slug":   slug,
+	})
+}
+
+func (s *Server) handleClearCache(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	err := s.proc.ClearCache(slug)
+	s.renderPartial(w, "clear_cache_result", map[string]any{
+		"Error": errStr(err),
+		"Slug":  slug,
 	})
 }
 
