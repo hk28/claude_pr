@@ -158,6 +158,25 @@ func imgSrc(n *html.Node) string {
 	return src
 }
 
+// isCoverImage returns true if the img node looks like a book cover (not a flag/icon).
+// Rejects: GIF files, and images with width or height attribute < 50.
+func isCoverImage(n *html.Node, src string) bool {
+	lower := strings.ToLower(src)
+	if strings.HasSuffix(lower, ".gif") {
+		return false
+	}
+	for _, a := range n.Attr {
+		if a.Key == "width" || a.Key == "height" {
+			var px int
+			fmt.Sscanf(a.Val, "%d", &px)
+			if px > 0 && px < 50 {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // extractCoverURL finds the first cover image in the Perrypedia infobox.
 // Perrypedia uses protocol-relative URLs like //www.perrypedia.de/mediawiki/images/...
 func extractCoverURL(doc *html.Node) string {
@@ -169,7 +188,7 @@ func extractCoverURL(doc *html.Node) string {
 		}
 		if n.Type == html.ElementNode && n.Data == "img" {
 			src := imgSrc(n)
-			if strings.Contains(src, "/mediawiki/images/") {
+			if strings.Contains(src, "/mediawiki/images/") && isCoverImage(n, src) {
 				if strings.HasPrefix(src, "//") {
 					src = "https:" + src
 				} else if strings.HasPrefix(src, "/") {
@@ -189,7 +208,10 @@ func extractCoverURL(doc *html.Node) string {
 }
 
 // normalizeDate tries to parse German date formats and return "YYYY-MM-DD".
-// Perrypedia typically returns dates as "DD. Mmm YYYY" (German) or "YYYY-MM-DD".
+// Handles:
+//   - "YYYY-MM-DD" (already ISO)
+//   - "29. November 2024"
+//   - "Freitag, 29. November 2024" (weekday prefix, strip before comma)
 func normalizeDate(s string) string {
 	s = strings.TrimSpace(s)
 	if s == "" {
@@ -199,7 +221,11 @@ func normalizeDate(s string) string {
 	if len(s) == 10 && s[4] == '-' {
 		return s
 	}
-	// Try German month names: "25. Juni 2021"
+	// Strip optional weekday prefix "Freitag, " → "29. November 2024"
+	if i := strings.Index(s, ", "); i > 0 {
+		s = strings.TrimSpace(s[i+2:])
+	}
+	// Try German month names: "29. November 2024"
 	germanMonths := map[string]string{
 		"Januar": "01", "Februar": "02", "März": "03", "April": "04",
 		"Mai": "05", "Juni": "06", "Juli": "07", "August": "08",
