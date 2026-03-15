@@ -61,7 +61,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	viewMode := r.URL.Query().Get("view")
 	if viewMode == "" {
-		viewMode = "medium"
+		viewMode = "big"
 	}
 	filterSlug := r.URL.Query().Get("series")
 	filterType := r.URL.Query().Get("type")
