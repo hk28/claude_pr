@@ -3,6 +3,7 @@ package processor
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -56,8 +57,11 @@ func (p *Processor) scrapeAndCache(slug string, cfg config.SeriesConfig, number 
 // Returns the local URL path ("/covers/<slug>/<n>.<ext>") on success,
 // or the original remote URL if the download fails.
 func (p *Processor) downloadCover(slug string, number int, remoteURL string) string {
+	log.Printf("downloading cover for %s #%d: %s", slug, number, remoteURL)
+
 	u, err := url.Parse(remoteURL)
 	if err != nil {
+		log.Printf("cover %s #%d: bad URL: %v", slug, number, err)
 		return remoteURL
 	}
 	ext := strings.ToLower(filepath.Ext(u.Path))
@@ -65,30 +69,38 @@ func (p *Processor) downloadCover(slug string, number int, remoteURL string) str
 		ext = ".jpg"
 	}
 
-	resp, err := http.Get(remoteURL)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		if resp != nil {
-			resp.Body.Close()
-		}
+	req, _ := http.NewRequest("GET", remoteURL, nil)
+	req.Header.Set("User-Agent", "prman/1.0 (personal media manager)")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("cover %s #%d: fetch error: %v", slug, number, err)
 		return remoteURL
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("cover %s #%d: HTTP %d", slug, number, resp.StatusCode)
+		return remoteURL
+	}
 
 	dir := filepath.Join(p.Cache.CoversDir, slug)
 	if err := os.MkdirAll(dir, 0755); err != nil {
+		log.Printf("cover %s #%d: mkdir: %v", slug, number, err)
 		return remoteURL
 	}
 
 	dst := filepath.Join(dir, fmt.Sprintf("%d%s", number, ext))
 	f, err := os.Create(dst)
 	if err != nil {
+		log.Printf("cover %s #%d: create file: %v", slug, number, err)
 		return remoteURL
 	}
 	defer f.Close()
 	if _, err := io.Copy(f, resp.Body); err != nil {
+		log.Printf("cover %s #%d: write: %v", slug, number, err)
 		os.Remove(dst)
 		return remoteURL
 	}
+	log.Printf("cover %s #%d saved → %s", slug, number, dst)
 	return fmt.Sprintf("/covers/%s/%d%s", slug, number, ext)
 }
 

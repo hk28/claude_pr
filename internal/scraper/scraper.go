@@ -145,6 +145,19 @@ func textContent(n *html.Node) string {
 	return sb.String()
 }
 
+// imgSrc returns the image URL from src or data-src attributes (handles lazy-loading).
+func imgSrc(n *html.Node) string {
+	src := ""
+	for _, a := range n.Attr {
+		if a.Key == "src" {
+			src = a.Val
+		} else if a.Key == "data-src" && src == "" {
+			src = a.Val
+		}
+	}
+	return src
+}
+
 // extractCoverURL finds the first cover image in the Perrypedia infobox.
 // Perrypedia uses protocol-relative URLs like //www.perrypedia.de/mediawiki/images/...
 func extractCoverURL(doc *html.Node) string {
@@ -155,18 +168,15 @@ func extractCoverURL(doc *html.Node) string {
 			return
 		}
 		if n.Type == html.ElementNode && n.Data == "img" {
-			src := ""
-			for _, a := range n.Attr {
-				if a.Key == "src" {
-					src = a.Val
-					break
-				}
-			}
+			src := imgSrc(n)
 			if strings.Contains(src, "/mediawiki/images/") {
 				if strings.HasPrefix(src, "//") {
 					src = "https:" + src
+				} else if strings.HasPrefix(src, "/") {
+					src = "https://www.perrypedia.de" + src
 				}
 				result = src
+				log.Printf("cover URL found: %s", src)
 				return
 			}
 		}
