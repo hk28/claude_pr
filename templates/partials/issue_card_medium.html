@@ -11,20 +11,21 @@
     {{end}}
   </div>
   <div class="card-body">
-    <div class="card-title">{{if $issue.Title}}{{$issue.Title}}{{else}}#{{$issue.Number}}{{end}}</div>
-    <div class="card-meta meta-mono">
-      <span class="card-count">#{{$issue.Number}}</span>
-      {{if $issue.Author}}<span class="card-author">{{$issue.Author}}</span>{{end}}
-      {{if $issue.ReleaseDate}}<span class="card-date">{{$issue.ReleaseDate}}</span>{{end}}
-    </div>
+    {{if $issue.SourceURL}}
+    <a class="card-title" href="{{$issue.SourceURL}}" target="_blank" rel="noopener"><span class="card-num-inline">#{{$issue.Number}}</span>{{if $issue.Title}} — {{$issue.Title}}{{end}}</a>
+    {{else}}
+    <div class="card-title"><span class="card-num-inline">#{{$issue.Number}}</span>{{if $issue.Title}} — {{$issue.Title}}{{end}}</div>
+    {{end}}
+    {{if $issue.Author}}<div class="card-author-row">{{$issue.Author}}</div>{{end}}
+    {{if $issue.ReleaseDate}}<div class="card-date-row">{{$issue.ReleaseDate}}</div>{{end}}
     {{if $issue.Description}}<div class="card-description">{{$issue.Description}}</div>{{end}}
-    <div class="card-states">
+    <div class="card-states" style="margin-top:6px">
       {{range $name := $issue.StateNames}}
       {{$val := index $issue.States $name}}
       <span class="state-pill{{if $val}} state-pill-active{{else}} state-pill-inactive{{end}}">{{$name}}</span>
       {{end}}
     </div>
-    <div class="card-meta" style="margin-top:6px">
+    <div class="card-meta" style="margin-top:4px">
       {{if $issue.InboxAudio}}<span class="badge badge-ok">audio</span>{{end}}
       {{if $issue.InboxEbook}}<span class="badge badge-ok">ebook</span>{{end}}
       {{if $issue.OutputAudio}}<span class="badge badge-done">copied</span>{{end}}

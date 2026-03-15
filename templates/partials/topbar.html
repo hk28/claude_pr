@@ -25,16 +25,16 @@
       </label>
     </form>
   </div>
-  <div class="topbar-views">
-    <a class="view-btn{{if eq .ViewMode "big"}} active{{end}}"
+  <div class="topbar-views" id="topbar-views">
+    <a class="view-btn{{if eq .ViewMode "big"}} active{{end}}" data-view="big"
        hx-get="/?view=big&series={{.FilterSlug}}&type={{.FilterType}}"
        hx-target="#main-content"
        hx-push-url="true">Big</a>
-    <a class="view-btn{{if eq .ViewMode "medium"}} active{{end}}"
+    <a class="view-btn{{if eq .ViewMode "medium"}} active{{end}}" data-view="medium"
        hx-get="/?view=medium&series={{.FilterSlug}}&type={{.FilterType}}"
        hx-target="#main-content"
        hx-push-url="true">Medium</a>
-    <a class="view-btn{{if eq .ViewMode "details"}} active{{end}}"
+    <a class="view-btn{{if eq .ViewMode "details"}} active{{end}}" data-view="details"
        hx-get="/?view=details&series={{.FilterSlug}}&type={{.FilterType}}"
        hx-target="#main-content"
        hx-push-url="true">Details</a>

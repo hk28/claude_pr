@@ -15,12 +15,18 @@
         <span class="state-label{{if $val}} state-label-on{{end}}">{{$name}}</span>
       {{end}}
     </div>
-    {{if $issue.InboxAudio}}<span class="card-badge-inbox tag-audio">audio</span>{{end}}
-    {{if $issue.InboxEbook}}<span class="card-badge-inbox tag-ebook">ebook</span>{{end}}
   </div>
   <div class="card-body card-body-big">
-    <span class="card-num">#{{$issue.Number}}</span>
-    <div class="card-title">{{if $issue.Title}}{{$issue.Title}}{{else}}—{{end}}</div>
+    {{if $issue.SourceURL}}
+    <a class="card-title" href="{{$issue.SourceURL}}" target="_blank" rel="noopener"><span class="card-num-inline">#{{$issue.Number}}</span>{{if $issue.Title}} — {{$issue.Title}}{{end}}</a>
+    {{else}}
+    <div class="card-title"><span class="card-num-inline">#{{$issue.Number}}</span>{{if $issue.Title}} — {{$issue.Title}}{{end}}</div>
+    {{end}}
+    <div class="card-meta" style="margin-top:5px">
+      {{if $issue.InboxAudio}}<span class="badge badge-ok">audio</span>{{end}}
+      {{if $issue.InboxEbook}}<span class="badge badge-ok">ebook</span>{{end}}
+      {{if $issue.OutputAudio}}<span class="badge badge-done">copied</span>{{end}}
+    </div>
   </div>
 </div>
 {{end}}

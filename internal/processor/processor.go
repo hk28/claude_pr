@@ -53,16 +53,83 @@ func (p *Processor) scrapeAndCache(slug string, cfg config.SeriesConfig, number 
 	return issue, p.Cache.Set(slug, issue)
 }
 
-// downloadCover fetches the remote cover image and stores it under CoversDir.
-// Returns the local URL path ("/covers/<slug>/<n>.<ext>") on success,
-// or the original remote URL if the download fails.
-func (p *Processor) downloadCover(slug string, number int, remoteURL string) string {
-	log.Printf("downloading cover for %s #%d: %s", slug, number, remoteURL)
+// fullResImageURL converts a Perrypedia thumbnail URL to its full-resolution equivalent
+// by removing the /thumb/ path component and the trailing /NNpx-filename segment.
+// e.g. .../images/thumb/c/c2/PR3360.jpg/400px-PR3360.jpg → .../images/c/c2/PR3360.jpg
+func fullResImageURL(rawURL string) string {
+	const thumbMarker = "/images/thumb/"
+	idx := strings.Index(rawURL, thumbMarker)
+	if idx < 0 {
+		return rawURL
+	}
+	rest := rawURL[idx+len(thumbMarker):]
+	lastSlash := strings.LastIndex(rest, "/")
+	if lastSlash < 0 {
+		return rawURL
+	}
+	return rawURL[:idx] + "/images/" + rest[:lastSlash]
+}
 
+// upscaleThumbURL replaces the Perrypedia thumbnail size prefix (e.g. /200px-)
+// with /400px- to fetch a higher-resolution version.
+func upscaleThumbURL(rawURL string) string {
+	lastSlash := strings.LastIndex(rawURL, "/")
+	if lastSlash < 0 {
+		return rawURL
+	}
+	seg := rawURL[lastSlash+1:] // e.g. "200px-PR3300.jpg"
+	pxIdx := strings.Index(seg, "px-")
+	if pxIdx <= 0 {
+		return rawURL
+	}
+	for _, c := range seg[:pxIdx] {
+		if c < '0' || c > '9' {
+			return rawURL
+		}
+	}
+	return rawURL[:lastSlash+1] + "400px-" + seg[pxIdx+3:]
+}
+
+// downloadCover fetches the remote cover image and stores it under CoversDir.
+// Tries in order: 400px upscaled → full-resolution → original thumbnail.
+// Returns the local URL path ("/covers/<slug>/<n>.<ext>") on success,
+// or the original remote URL if all attempts fail.
+func (p *Processor) downloadCover(slug string, number int, remoteURL string) string {
+	originalURL := remoteURL
+
+	// 1. Try 400px upscaled thumbnail
+	upscaled := upscaleThumbURL(remoteURL)
+	if upscaled != originalURL {
+		log.Printf("downloading cover for %s #%d: %s", slug, number, upscaled)
+		if local, ok := p.fetchAndSaveCover(slug, number, upscaled); ok {
+			return local
+		}
+	}
+
+	// 2. Try full-resolution image (strips /thumb/ path)
+	fullRes := fullResImageURL(originalURL)
+	if fullRes != originalURL {
+		log.Printf("cover %s #%d: trying full resolution: %s", slug, number, fullRes)
+		if local, ok := p.fetchAndSaveCover(slug, number, fullRes); ok {
+			return local
+		}
+	}
+
+	// 3. Fall back to original thumbnail size
+	log.Printf("cover %s #%d: falling back to original: %s", slug, number, originalURL)
+	if local, ok := p.fetchAndSaveCover(slug, number, originalURL); ok {
+		return local
+	}
+	return originalURL
+}
+
+// fetchAndSaveCover downloads a single URL and saves it to CoversDir.
+// Returns the local path and true on success.
+func (p *Processor) fetchAndSaveCover(slug string, number int, remoteURL string) (string, bool) {
 	u, err := url.Parse(remoteURL)
 	if err != nil {
 		log.Printf("cover %s #%d: bad URL: %v", slug, number, err)
-		return remoteURL
+		return "", false
 	}
 	ext := strings.ToLower(filepath.Ext(u.Path))
 	if ext == "" {
@@ -74,34 +141,34 @@ func (p *Processor) downloadCover(slug string, number int, remoteURL string) str
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Printf("cover %s #%d: fetch error: %v", slug, number, err)
-		return remoteURL
+		return "", false
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("cover %s #%d: HTTP %d", slug, number, resp.StatusCode)
-		return remoteURL
+		return "", false
 	}
 
 	dir := filepath.Join(p.Cache.CoversDir, slug)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		log.Printf("cover %s #%d: mkdir: %v", slug, number, err)
-		return remoteURL
+		return "", false
 	}
 
 	dst := filepath.Join(dir, fmt.Sprintf("%d%s", number, ext))
 	f, err := os.Create(dst)
 	if err != nil {
 		log.Printf("cover %s #%d: create file: %v", slug, number, err)
-		return remoteURL
+		return "", false
 	}
 	defer f.Close()
 	if _, err := io.Copy(f, resp.Body); err != nil {
 		log.Printf("cover %s #%d: write: %v", slug, number, err)
 		os.Remove(dst)
-		return remoteURL
+		return "", false
 	}
 	log.Printf("cover %s #%d saved → %s", slug, number, dst)
-	return fmt.Sprintf("/covers/%s/%d%s", slug, number, ext)
+	return fmt.Sprintf("/covers/%s/%d%s", slug, number, ext), true
 }
 
 // ClearCache deletes the JSON metadata cache and cover images for a series.

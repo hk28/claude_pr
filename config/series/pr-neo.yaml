@@ -27,8 +27,8 @@ types:
   - ebook
 length: ongoing
 complete: false
-scanfrom: 250
-latest: 300
+scanfrom: 300
+latest: 0
 states:
   - Released
   - Available

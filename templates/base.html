@@ -36,6 +36,30 @@ function openCover(localUrl, srcUrl) {
   a.href = srcUrl || '#'; a.style.display = srcUrl ? '' : 'none';
   m.showModal();
 }
+function syncViewButtons() {
+  var view = new URLSearchParams(window.location.search).get('view') || 'medium';
+  document.querySelectorAll('#topbar-views .view-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.view === view);
+  });
+}
+document.addEventListener('htmx:afterSettle', syncViewButtons);
+
+(function() {
+  var st = document.getElementById('sidebar-status');
+  var timer;
+  document.addEventListener('htmx:beforeRequest', function() {
+    clearTimeout(timer);
+    if (st) st.textContent = 'fetching…';
+  });
+  document.addEventListener('htmx:afterSettle', function() {
+    clearTimeout(timer);
+    if (st) { st.textContent = 'done'; timer = setTimeout(function() { st.textContent = ''; }, 2000); }
+  });
+  document.addEventListener('htmx:responseError', function() {
+    clearTimeout(timer);
+    if (st) { st.textContent = 'error'; timer = setTimeout(function() { st.textContent = ''; }, 4000); }
+  });
+})();
 </script>
 </body>
 </html>
