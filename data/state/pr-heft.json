@@ -1,11 +1,21 @@
 {
 	"seriesSlug": "pr-heft",
-	"updatedAt": "2026-03-15T19:37:01.018801505+01:00",
+	"updatedAt": "2026-03-15T20:18:21.535975844+01:00",
 	"issues": {
+		"3109": {
+			"number": 3109,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": false
+			},
+			"inboxEbook": "testfolder/ebook/Pr.Heft/pr 3109.epub"
+		},
 		"3300": {
 			"number": 3300,
 			"states": {
-				"Available": false,
+				"Available": true,
 				"Consumed": false,
 				"Read": true,
 				"Released": true
@@ -306,7 +316,9 @@
 				"Consumed": false,
 				"Read": false,
 				"Released": true
-			}
+			},
+			"inboxEbook": "testfolder/ebook/Pr.Heft/pr 3333",
+			"outputEbook": "output/ebook/Pr.Heft/PR #3333 - "
 		},
 		"3334": {
 			"number": 3334,

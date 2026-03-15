@@ -2,9 +2,13 @@
 {{$issue := .Issue}}
 <div class="card card-big{{if not (index $issue.States "Released")}} card-unreleased{{end}}">
   <div class="card-cover-wrap">
+    {{if $issue.CoverURL}}
+    <img class="card-cover" src="{{$issue.CoverURL}}" alt="#{{$issue.Number}}" loading="lazy">
+    {{else}}
     <div class="card-cover card-cover-placeholder">
       <span class="cover-num">#{{$issue.Number}}</span>
     </div>
+    {{end}}
     <div class="card-state-dots">
       {{range $name := $issue.StateNames}}
         {{$val := index $issue.States $name}}

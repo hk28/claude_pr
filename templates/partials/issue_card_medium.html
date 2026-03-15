@@ -2,9 +2,13 @@
 {{$issue := .Issue}}
 <div class="card card-medium{{if not (index $issue.States "Released")}} card-unreleased{{end}}">
   <div class="card-cover-wrap card-cover-sm">
+    {{if $issue.CoverURL}}
+    <img class="card-cover" src="{{$issue.CoverURL}}" alt="#{{$issue.Number}}" loading="lazy">
+    {{else}}
     <div class="card-cover card-cover-placeholder">
       <span class="cover-num">#{{$issue.Number}}</span>
     </div>
+    {{end}}
   </div>
   <div class="card-body">
     <span class="card-title">{{if $issue.Title}}{{$issue.Title}}{{else}}#{{$issue.Number}}{{end}}</span>

@@ -1,9 +1,13 @@
 {{define "card_big"}}
 <div class="card card-big">
-  <div class="card-cover-wrap">
+  <a href="/series/{{.Config.SlugName}}?view={{.ViewMode}}" class="card-cover-wrap">
+    {{if .CoverURL}}
+    <img class="card-cover" src="{{.CoverURL}}" alt="{{.Config.Name}}" loading="lazy">
+    {{else}}
     <div class="card-cover card-cover-placeholder">
       <span class="cover-initials">{{slice .Config.Name 0 2}}</span>
     </div>
+    {{end}}
     <div class="card-state-dots">
       {{if gt (len .Issues) 0}}
       {{$first := index .Issues 0}}
@@ -13,7 +17,7 @@
         {{end}}
       {{end}}
     </div>
-  </div>
+  </a>
   <div class="card-body">
     <a href="/series/{{.Config.SlugName}}?view={{.ViewMode}}" class="card-title">{{.Config.Name}}</a>
     <div class="card-meta">

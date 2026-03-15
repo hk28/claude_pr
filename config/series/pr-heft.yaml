@@ -14,7 +14,7 @@ values:
   - name: Author
     alias: 'Autor:'
   - name: ReleaseDate
-    alias: 'Erstmalserschienen:'
+    alias: 'Erstmals erschienen:'
   - name: SubSeries
     alias: 'Zyklus:'
 locations:

@@ -155,9 +155,10 @@ code { font-family: monospace; font-size: 12px; }
 /* Big card */
 .cards-big { align-items: flex-start; }
 .card-big { width: 180px; }
-.card-cover-wrap { position: relative; }
+.card-cover-wrap { position: relative; display: block; text-decoration: none; }
 .card-cover { width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; }
 .card-cover-placeholder { background: linear-gradient(135deg, var(--bg-elevated), var(--border)); }
+img.card-cover { object-fit: cover; display: block; }
 .cover-initials { font-size: 32px; font-weight: 800; color: var(--accent); opacity: .6; }
 .card-state-dots {
   position: absolute; top: 8px; right: 8px;

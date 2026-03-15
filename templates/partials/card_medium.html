@@ -1,10 +1,14 @@
 {{define "card_medium"}}
 <div class="card card-medium">
-  <div class="card-cover-wrap card-cover-sm">
+  <a href="/series/{{.Config.SlugName}}?view={{.ViewMode}}" class="card-cover-wrap card-cover-sm">
+    {{if .CoverURL}}
+    <img class="card-cover" src="{{.CoverURL}}" alt="{{.Config.Name}}" loading="lazy">
+    {{else}}
     <div class="card-cover card-cover-placeholder">
       <span class="cover-initials">{{slice .Config.Name 0 2}}</span>
     </div>
-  </div>
+    {{end}}
+  </a>
   <div class="card-body">
     <a href="/series/{{.Config.SlugName}}?view={{.ViewMode}}" class="card-title">{{.Config.Name}}</a>
     <div class="card-meta">

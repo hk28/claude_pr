@@ -73,6 +73,7 @@ func (s *Scraper) FetchIssue(cfg config.SeriesConfig, number int) (cache.Scraped
 		Author:      fields["Author"],
 		ReleaseDate: normalizeDate(fields["ReleaseDate"]),
 		SubSeries:   fields["SubSeries"],
+		CoverURL:    extractCoverURL(doc),
 		SourceURL:   finalURL,
 		CachedAt:    time.Now(),
 	}
@@ -102,16 +103,16 @@ func extractField(doc *html.Node, alias string) string {
 			return
 		}
 		if n.Type == html.ElementNode && n.Data == "tr" {
-			// Collect <td> children
-			var tds []*html.Node
+			// Collect <th> and <td> children (Perrypedia uses <th> for some labels)
+			var cells []*html.Node
 			for c := n.FirstChild; c != nil; c = c.NextSibling {
-				if c.Type == html.ElementNode && c.Data == "td" {
-					tds = append(tds, c)
+				if c.Type == html.ElementNode && (c.Data == "td" || c.Data == "th") {
+					cells = append(cells, c)
 				}
 			}
-			for i, td := range tds {
-				if strings.TrimSpace(textContent(td)) == alias && i+1 < len(tds) {
-					result = strings.TrimSpace(textContent(tds[i+1]))
+			for i, cell := range cells {
+				if strings.TrimSpace(textContent(cell)) == alias && i+1 < len(cells) {
+					result = strings.TrimSpace(textContent(cells[i+1]))
 					return
 				}
 			}
@@ -134,6 +135,39 @@ func textContent(n *html.Node) string {
 		sb.WriteString(textContent(c))
 	}
 	return sb.String()
+}
+
+// extractCoverURL finds the first cover image in the Perrypedia infobox.
+// Perrypedia uses protocol-relative URLs like //www.perrypedia.de/mediawiki/images/...
+func extractCoverURL(doc *html.Node) string {
+	var result string
+	var walk func(*html.Node)
+	walk = func(n *html.Node) {
+		if result != "" {
+			return
+		}
+		if n.Type == html.ElementNode && n.Data == "img" {
+			src := ""
+			for _, a := range n.Attr {
+				if a.Key == "src" {
+					src = a.Val
+					break
+				}
+			}
+			if strings.Contains(src, "/mediawiki/images/") {
+				if strings.HasPrefix(src, "//") {
+					src = "https:" + src
+				}
+				result = src
+				return
+			}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			walk(c)
+		}
+	}
+	walk(doc)
+	return result
 }
 
 // normalizeDate tries to parse German date formats and return "YYYY-MM-DD".

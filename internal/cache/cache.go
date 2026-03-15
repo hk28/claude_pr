@@ -18,6 +18,7 @@ type ScrapedIssue struct {
 	Author      string            `json:"author"`
 	ReleaseDate string            `json:"releaseDate"` // "YYYY-MM-DD"
 	SubSeries   string            `json:"subSeries"`
+	CoverURL    string            `json:"coverURL,omitempty"`
 	SourceURL   string            `json:"sourceURL"` // final URL after redirect
 	CachedAt    time.Time         `json:"cachedAt"`
 	Extra       map[string]string `json:"extra,omitempty"`

@@ -16,6 +16,7 @@ type IssueVM struct {
 	Author      string
 	ReleaseDate string
 	SubSeries   string
+	CoverURL    string
 	States      map[string]bool
 	StateNames  []string // ordered list from series config
 	InboxAudio  string
@@ -35,7 +36,8 @@ type IssueCardVM struct {
 type SeriesVM struct {
 	Config               config.SeriesConfig
 	Issues               []IssueVM
-	MissingAudio         int // in inbox, not yet copied to output
+	CoverURL             string // cover of the latest issue that has one
+	MissingAudio         int    // in inbox, not yet copied to output
 	MissingEbook         int
 	MissingReleasedAudio int // released but not yet in inbox
 	MissingReleasedEbook int
@@ -94,7 +96,11 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 			iv.Author = issue.Author
 			iv.ReleaseDate = issue.ReleaseDate
 			iv.SubSeries = issue.SubSeries
+			iv.CoverURL = issue.CoverURL
 			iv.CacheExists = true
+			if issue.CoverURL != "" {
+				vm.CoverURL = issue.CoverURL // keeps updating → ends up as latest issue's cover
+			}
 		}
 
 		released := is.States["Released"]
