@@ -1,0 +1,36 @@
+name: Pr.Neo
+subdir: "PR Neo #{{printf \"%.03d\" .Number}} - {{.Title}}"
+title: 'Neo #{{.Number}} - {{.Title}}'
+subtitle: '{{.SubSeries}}'
+subseries: 'PR Neo #{{.Number}},{{.SubSeries}} (Neo)'
+url: https://www.perrypedia.de/wiki/Quelle:PRN%d
+core: ""
+titleidx: false
+values:
+  - name: Title
+    alias: 'Titel:'
+  - name: Author
+    alias: 'Autor:'
+  - name: ReleaseDate
+    alias: 'Erstmalserschienen:'
+  - name: SubSeries
+    alias: 'Zyklus:'
+locations:
+  - what: audio
+    scanpattern: "neo %.03d"
+interval: 14
+anchor:
+  number: 278
+  date: "2022-05-13"
+types:
+  - audio
+  - ebook
+length: ongoing
+complete: false
+scanfrom: 250
+latest: 300
+states:
+  - Released
+  - Available
+  - Read
+  - Consumed

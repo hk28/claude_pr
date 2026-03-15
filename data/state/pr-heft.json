@@ -1,0 +1,636 @@
+{
+	"seriesSlug": "pr-heft",
+	"updatedAt": "2026-03-15T19:37:01.018801505+01:00",
+	"issues": {
+		"3300": {
+			"number": 3300,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": true,
+				"Released": true
+			}
+		},
+		"3301": {
+			"number": 3301,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3302": {
+			"number": 3302,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3303": {
+			"number": 3303,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3304": {
+			"number": 3304,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3305": {
+			"number": 3305,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3306": {
+			"number": 3306,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3307": {
+			"number": 3307,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3308": {
+			"number": 3308,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3309": {
+			"number": 3309,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3310": {
+			"number": 3310,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3311": {
+			"number": 3311,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3312": {
+			"number": 3312,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3313": {
+			"number": 3313,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3314": {
+			"number": 3314,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3315": {
+			"number": 3315,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3316": {
+			"number": 3316,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3317": {
+			"number": 3317,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3318": {
+			"number": 3318,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3319": {
+			"number": 3319,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3320": {
+			"number": 3320,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3321": {
+			"number": 3321,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3322": {
+			"number": 3322,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3323": {
+			"number": 3323,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3324": {
+			"number": 3324,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3325": {
+			"number": 3325,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3326": {
+			"number": 3326,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3327": {
+			"number": 3327,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3328": {
+			"number": 3328,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3329": {
+			"number": 3329,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3330": {
+			"number": 3330,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3331": {
+			"number": 3331,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3332": {
+			"number": 3332,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3333": {
+			"number": 3333,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3334": {
+			"number": 3334,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3335": {
+			"number": 3335,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3336": {
+			"number": 3336,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3337": {
+			"number": 3337,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3338": {
+			"number": 3338,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3339": {
+			"number": 3339,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3340": {
+			"number": 3340,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3341": {
+			"number": 3341,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3342": {
+			"number": 3342,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3343": {
+			"number": 3343,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3344": {
+			"number": 3344,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3345": {
+			"number": 3345,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3346": {
+			"number": 3346,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3347": {
+			"number": 3347,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3348": {
+			"number": 3348,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3349": {
+			"number": 3349,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3350": {
+			"number": 3350,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3351": {
+			"number": 3351,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3352": {
+			"number": 3352,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3353": {
+			"number": 3353,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3354": {
+			"number": 3354,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3355": {
+			"number": 3355,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3356": {
+			"number": 3356,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3357": {
+			"number": 3357,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3358": {
+			"number": 3358,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3359": {
+			"number": 3359,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3360": {
+			"number": 3360,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3361": {
+			"number": 3361,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3362": {
+			"number": 3362,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3363": {
+			"number": 3363,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3364": {
+			"number": 3364,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3365": {
+			"number": 3365,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3366": {
+			"number": 3366,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3367": {
+			"number": 3367,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3368": {
+			"number": 3368,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		},
+		"3369": {
+			"number": 3369,
+			"states": {
+				"Available": false,
+				"Consumed": false,
+				"Read": false,
+				"Released": true
+			}
+		}
+	}
+}

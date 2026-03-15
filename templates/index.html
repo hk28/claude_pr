@@ -1,0 +1,58 @@
+{{define "index.html"}}
+{{template "html_head" .}}
+{{$vm := .}}
+{{$view := .ViewMode}}
+
+{{if eq $view "big"}}
+<div class="cards-grid cards-big">
+  {{range .Series}}
+  {{if or (not $vm.FilterSlug) (eq $vm.FilterSlug .Config.SlugName)}}
+  {{if or (not $vm.OnlyMissing) (gt .MissingAudio 0) (gt .MissingEbook 0)}}
+  {{template "card_big" .}}
+  {{end}}{{end}}{{end}}
+</div>
+{{else if eq $view "medium"}}
+<div class="cards-grid cards-medium">
+  {{range .Series}}
+  {{if or (not $vm.FilterSlug) (eq $vm.FilterSlug .Config.SlugName)}}
+  {{if or (not $vm.OnlyMissing) (gt .MissingAudio 0) (gt .MissingEbook 0)}}
+  {{template "card_medium" .}}
+  {{end}}{{end}}{{end}}
+</div>
+{{else}}
+{{range .Series}}
+{{if or (not $vm.FilterSlug) (eq $vm.FilterSlug .Config.SlugName)}}
+{{template "series_detail" .}}
+{{end}}{{end}}
+{{end}}
+
+{{template "html_foot" .}}
+{{end}}
+
+{{/* HTMX partial: swaps only the main-content div */}}
+{{define "main_content"}}
+{{$vm := .}}
+{{$view := .ViewMode}}
+{{if eq $view "big"}}
+<div class="cards-grid cards-big">
+  {{range .Series}}
+  {{if or (not $vm.FilterSlug) (eq $vm.FilterSlug .Config.SlugName)}}
+  {{if or (not $vm.OnlyMissing) (gt .MissingAudio 0) (gt .MissingEbook 0)}}
+  {{template "card_big" .}}
+  {{end}}{{end}}{{end}}
+</div>
+{{else if eq $view "medium"}}
+<div class="cards-grid cards-medium">
+  {{range .Series}}
+  {{if or (not $vm.FilterSlug) (eq $vm.FilterSlug .Config.SlugName)}}
+  {{if or (not $vm.OnlyMissing) (gt .MissingAudio 0) (gt .MissingEbook 0)}}
+  {{template "card_medium" .}}
+  {{end}}{{end}}{{end}}
+</div>
+{{else}}
+{{range .Series}}
+{{if or (not $vm.FilterSlug) (eq $vm.FilterSlug .Config.SlugName)}}
+{{template "series_detail" .}}
+{{end}}{{end}}
+{{end}}
+{{end}}

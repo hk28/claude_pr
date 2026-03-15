@@ -1,0 +1,4 @@
+inbox_audio: ./testfolder/audio
+inbox_ebook: ./testfolder/ebook
+output_audio: ./output/audio
+output_ebook: ./output/ebook

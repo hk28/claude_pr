@@ -1,0 +1,93 @@
+{{define "series_detail"}}
+{{$slug := .Config.SlugName}}
+<div class="series-detail">
+  <div class="detail-header">
+    <h2>{{.Config.Name}}</h2>
+    <div class="detail-types">
+      {{range .Config.Types}}<span class="tag-{{.}} type-tag">{{.}}</span>{{end}}
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-primary"
+              hx-post="/series/{{$slug}}/scan"
+              hx-target="#action-result"
+              hx-swap="innerHTML"
+              hx-indicator="#action-spinner">
+        <span class="htmx-indicator" id="action-spinner">⟳</span>
+        Scan Inbox
+      </button>
+      <button class="btn btn-secondary"
+              hx-post="/series/{{$slug}}/update"
+              hx-target="#action-result"
+              hx-swap="innerHTML">
+        Update Released
+      </button>
+      <button class="btn btn-secondary"
+              hx-get="/series/{{$slug}}/copy-preview"
+              hx-target="#action-result"
+              hx-swap="innerHTML">
+        Copy Preview
+      </button>
+    </div>
+  </div>
+
+  <div id="action-result" class="action-result"></div>
+
+  {{if .Issues}}
+  <div class="table-wrap">
+    <table class="issue-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Date</th>
+          <th>SubSeries</th>
+          {{range .Config.States}}<th>{{.}}</th>{{end}}
+          <th>Inbox</th>
+          <th>Output</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Issues}}
+        {{$issue := .}}
+        <tr class="issue-row{{if not (index .States "Released")}} issue-unreleased{{end}}">
+          <td class="col-num">{{.Number}}</td>
+          <td class="col-title">
+            {{if .Title}}{{.Title}}{{else}}<span class="text-muted">—</span>{{end}}
+          </td>
+          <td class="col-author">{{if .Author}}{{.Author}}{{else}}—{{end}}</td>
+          <td class="col-date">{{if .ReleaseDate}}{{.ReleaseDate}}{{else}}—{{end}}</td>
+          <td class="col-subseries">{{if .SubSeries}}{{.SubSeries}}{{else}}—{{end}}</td>
+          {{range $name := .StateNames}}
+          {{$val := index $issue.States $name}}
+          <td class="col-state">
+            <input type="checkbox"
+                   class="state-checkbox"
+                   {{if $val}}checked{{end}}
+                   hx-post="/series/{{$slug}}/issue/{{$issue.Number}}/state"
+                   hx-vals='{"state":"{{$name}}","value":"{{if $val}}false{{else}}true{{end}}"}'
+                   hx-target="#sidebar-{{$slug}}"
+                   hx-swap="outerHTML"
+                   title="{{$name}}">
+          </td>
+          {{end}}
+          <td class="col-inbox">
+            {{if $issue.InboxAudio}}<span class="badge badge-ok" title="{{$issue.InboxAudio}}">audio</span>{{end}}
+            {{if $issue.InboxEbook}}<span class="badge badge-ok" title="{{$issue.InboxEbook}}">ebook</span>{{end}}
+          </td>
+          <td class="col-output">
+            {{if $issue.OutputAudio}}<span class="badge badge-done">audio</span>{{end}}
+            {{if $issue.OutputEbook}}<span class="badge badge-done">ebook</span>{{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <div class="empty-state">
+    <p>No issues tracked yet. Run <strong>Scan Inbox</strong> or <strong>Update Released</strong> to populate.</p>
+  </div>
+  {{end}}
+</div>
+{{end}}

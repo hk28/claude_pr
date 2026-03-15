@@ -1,0 +1,26 @@
+{{/* Shared layout helpers — not a standalone page template */}}
+
+{{define "html_head"}}<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>prman — Perry Rhodan Manager</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/htmx.min.js" defer></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">{{template "sidebar" .}}</aside>
+  <div class="main-wrapper">
+    {{template "topbar" .}}
+    <main class="main-content" id="main-content">
+{{end}}
+
+{{define "html_foot"}}
+    </main>
+  </div>
+</div>
+</body>
+</html>
+{{end}}

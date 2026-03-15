@@ -1,0 +1,40 @@
+name: Pr.Heft
+subdir: "PR #{{printf \"%.04d\" .Number}} - {{.Title}}"
+title: '{{.Title}}'
+subtitle: 'PR #{{.Number}}'
+subseries: 'PR #{{.Number}},{{.SubSeries}}'
+url: https://www.perrypedia.de/wiki/Quelle:PR%d
+core: PR.Heft
+titleidx: true
+values:
+  - name: Title
+    alias: 'Titel:'
+  - name: Description
+    alias: 'Untertitel:'
+  - name: Author
+    alias: 'Autor:'
+  - name: ReleaseDate
+    alias: 'Erstmalserschienen:'
+  - name: SubSeries
+    alias: 'Zyklus:'
+locations:
+  - what: audio
+    scanpattern: "pr %.04d"
+  - what: ebook
+    scanpattern: "pr %.04d"
+interval: 7
+anchor:
+  number: 3120
+  date: "2021-06-03"
+types:
+  - audio
+  - ebook
+length: ongoing
+complete: false
+scanfrom: 3300
+latest: 0
+states:
+  - Released
+  - Available
+  - Read
+  - Consumed

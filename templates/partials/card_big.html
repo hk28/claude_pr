@@ -1,0 +1,31 @@
+{{define "card_big"}}
+<div class="card card-big">
+  <div class="card-cover-wrap">
+    <div class="card-cover card-cover-placeholder">
+      <span class="cover-initials">{{slice .Config.Name 0 2}}</span>
+    </div>
+    <div class="card-state-dots">
+      {{if gt (len .Issues) 0}}
+      {{$first := index .Issues 0}}
+        {{range $name := $first.StateNames}}
+          {{$val := index $first.States $name}}
+          <span class="state-dot{{if $val}} state-dot-on{{end}}" title="{{$name}}"></span>
+        {{end}}
+      {{end}}
+    </div>
+  </div>
+  <div class="card-body">
+    <a href="/series/{{.Config.SlugName}}" class="card-title">{{.Config.Name}}</a>
+    <div class="card-meta">
+      <span class="card-count">{{.TotalReleased}} issues</span>
+      {{range .Config.Types}}<span class="tag-{{.}} type-tag">{{.}}</span>{{end}}
+    </div>
+    {{if or (gt .MissingAudio 0) (gt .MissingEbook 0)}}
+    <div class="card-missing">
+      {{if gt .MissingAudio 0}}<span class="badge badge-warn">{{.MissingAudio}} audio</span>{{end}}
+      {{if gt .MissingEbook 0}}<span class="badge badge-warn">{{.MissingEbook}} ebook</span>{{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

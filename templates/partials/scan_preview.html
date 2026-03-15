@@ -1,0 +1,37 @@
+{{define "scan_preview"}}
+<div class="action-card">
+  {{if .Error}}
+  <div class="error-box">Error: {{.Error}}</div>
+  {{else}}
+  <h4>Scan Complete</h4>
+  <p>Found <strong>{{len .Report.Found}}</strong> inbox items,
+     fetched metadata for <strong>{{len .Report.Fetched}}</strong> new issues.</p>
+  {{if .Report.Found}}
+  <ul class="scan-list">
+    {{range .Report.Found}}
+    <li><span class="tag-{{.MediaType}} type-tag">{{.MediaType}}</span>
+        #{{.Number}} — <code>{{.FolderPath}}</code></li>
+    {{end}}
+  </ul>
+  {{end}}
+  {{if .Report.Errors}}
+  <div class="error-list">
+    <strong>Errors:</strong>
+    <ul>{{range .Report.Errors}}<li>{{.}}</li>{{end}}</ul>
+  </div>
+  {{end}}
+  {{end}}
+</div>
+{{end}}
+
+{{define "update_result"}}
+<div class="action-card">
+  {{if .Error}}
+  <div class="error-box">Error: {{.Error}}</div>
+  {{else}}
+  <h4>Update Complete</h4>
+  <p>Latest issue: <strong>#{{.Report.LatestIssue}}</strong>.
+     Marked <strong>{{.Report.MarkedCount}}</strong> issues as Released.</p>
+  {{end}}
+</div>
+{{end}}

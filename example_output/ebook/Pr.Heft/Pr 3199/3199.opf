@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id">
+	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+		<dc:identifier opf:scheme="calibre" id="calibre_id">27</dc:identifier>
+		<dc:title>3199 - </dc:title>
+		<dc:creator opf:role="aut"></dc:creator>
+		<dc:date>0001-01-01</dc:date>
+		<dc:description></dc:description>
+		<dc:language>de</dc:language>
+		<dc:subject>NEW_BOOK</dc:subject>
+
+		<meta content="3199" name="calibre:series_index"/>
+		<meta content="2024-08-24" name="calibre:timestamp"/>
+		<meta content="{&quot;#extra#&quot;: 3199.0, &quot;datatype&quot;: &quot;series&quot;, &quot;name&quot;: &quot;Core&quot;, &quot;column&quot;: &quot;value&quot;, &quot;category_sort&quot;: &quot;value&quot;, &quot;is_csp&quot;: false, &quot;is_custom&quot;: true, &quot;is_editable&quot;: true, &quot;rec_index&quot;: 24, &quot;link_column&quot;: &quot;value&quot;, &quot;display&quot;: {}, &quot;is_multiple&quot;: null, &quot;is_multiple2&quot;: {}, &quot;search_terms&quot;: [&quot;#core&quot;], &quot;is_category&quot;: true, &quot;table&quot;: &quot;custom_column_1&quot;, &quot;kind&quot;: &quot;field&quot;, &quot;#value#&quot;: &quot;PR.Heft&quot;, &quot;label&quot;: &quot;core&quot;, &quot;colnum&quot;: 1}" name="calibre:user_metadata:#core"/>
+	</metadata>
+	<guide>
+		<reference href="cover.jpg" type="cover" title="Umschlagbild"/>
+	</guide>
+</package>
