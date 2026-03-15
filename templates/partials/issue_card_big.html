@@ -1,7 +1,7 @@
 {{define "issue_card_big"}}
 {{$issue := .Issue}}
 <div class="card card-big{{if not (index $issue.States "Released")}} card-unreleased{{end}}">
-  <div class="card-cover-wrap">
+  <div class="card-cover-wrap"{{if $issue.CoverURL}} onclick="openCover('{{$issue.CoverURL}}','{{$issue.SourceURL}}')" style="cursor:pointer"{{end}}>
     {{if $issue.CoverURL}}
     <img class="card-cover" src="{{$issue.CoverURL}}" alt="#{{$issue.Number}}" loading="lazy">
     {{else}}
@@ -9,22 +9,18 @@
       <span class="cover-num">#{{$issue.Number}}</span>
     </div>
     {{end}}
-    <div class="card-state-dots">
+    <div class="card-state-overlay">
       {{range $name := $issue.StateNames}}
         {{$val := index $issue.States $name}}
-        <span class="state-dot{{if $val}} state-dot-on{{end}}" title="{{$name}}"></span>
+        <span class="state-label{{if $val}} state-label-on{{end}}">{{$name}}</span>
       {{end}}
     </div>
     {{if $issue.InboxAudio}}<span class="card-badge-inbox tag-audio">audio</span>{{end}}
     {{if $issue.InboxEbook}}<span class="card-badge-inbox tag-ebook">ebook</span>{{end}}
   </div>
-  <div class="card-body">
-    <span class="card-title">{{if $issue.Title}}{{$issue.Title}}{{else}}#{{$issue.Number}}{{end}}</span>
-    <div class="card-meta">
-      <span class="card-count">#{{$issue.Number}}</span>
-      {{if $issue.ReleaseDate}}<span class="card-date">{{$issue.ReleaseDate}}</span>{{end}}
-    </div>
-    {{if $issue.SubSeries}}<div class="card-subseries">{{$issue.SubSeries}}</div>{{end}}
+  <div class="card-body card-body-big">
+    <span class="card-num">#{{$issue.Number}}</span>
+    <div class="card-title">{{if $issue.Title}}{{$issue.Title}}{{else}}—{{end}}</div>
   </div>
 </div>
 {{end}}

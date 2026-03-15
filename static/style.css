@@ -154,38 +154,72 @@ code { font-family: monospace; font-size: 12px; }
 
 /* Big card */
 .cards-big { align-items: flex-start; }
-.card-big { width: 180px; }
+.card-big { width: 270px; }
 .card-cover-wrap { position: relative; display: block; text-decoration: none; }
 .card-cover { width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; }
 .card-cover-placeholder { background: linear-gradient(135deg, var(--bg-elevated), var(--border)); }
 img.card-cover { object-fit: cover; display: block; }
-.cover-initials { font-size: 32px; font-weight: 800; color: var(--accent); opacity: .6; }
-.card-state-dots {
-  position: absolute; top: 8px; right: 8px;
-  display: flex; flex-direction: column; gap: 4px;
+.cover-initials { font-size: 40px; font-weight: 800; color: var(--accent); opacity: .6; }
+.cover-num { font-size: 28px; font-weight: 800; color: var(--accent); opacity: .6;
+  font-family: ui-monospace, 'SF Mono', monospace; }
+
+/* State overlay (text labels at cover bottom) */
+.card-state-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 8px 6px;
+  background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 100%);
 }
-.state-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--text-dim); transition: background .15s;
+.state-label {
+  font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px;
+  background: rgba(255,255,255,.12); color: rgba(255,255,255,.45);
+  border: 1px solid rgba(255,255,255,.12);
 }
-.state-dot-on { background: var(--ok); }
+.state-label-on {
+  background: rgba(34,197,94,.25); color: #6ee7b7;
+  border-color: rgba(34,197,94,.45);
+}
+
 .card-body { padding: 10px 12px; }
-.card-title { font-weight: 700; font-size: 13px; color: var(--text); display: block; }
+.card-body-big { padding: 8px 12px 10px; }
+.card-num { font-size: 11px; color: var(--text-muted); font-family: ui-monospace,'SF Mono',monospace; }
+.card-title { font-weight: 700; font-size: 13px; color: var(--text); display: block; margin-top: 2px; }
 .card-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 .card-count { font-size: 11px; color: var(--text-muted); }
+.card-author { font-size: 11px; color: var(--text-muted); }
+.card-date { font-size: 11px; color: var(--text-dim); }
 .card-missing { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+.card-description { font-size: 11px; color: var(--text-muted); margin-top: 5px;
+  font-style: italic; line-height: 1.4; }
+.meta-mono { font-family: ui-monospace, 'SF Mono', 'Consolas', monospace; }
 
-/* Medium card */
-.cards-medium { flex-direction: column; }
-.card-medium { display: flex; max-width: 600px; width: 100%; }
-.card-cover-sm .card-cover { width: 80px; height: 110px; min-width: 80px; }
-.card-body { padding: 14px 16px; flex: 1; }
-.card-latest { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+/* Medium card — two per row */
+.cards-medium { align-items: flex-start; }
+.card-medium { display: flex; width: 380px; max-width: 100%; }
+.card-cover-sm .card-cover { width: 110px; height: 150px; min-width: 110px; }
+.card-body { padding: 12px 14px; flex: 1; min-width: 0; }
 .card-states { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 .state-pill {
   font-size: 10px; padding: 2px 8px; border-radius: 20px;
   border: 1px solid var(--border); color: var(--text-muted);
 }
+
+/* Cover lightbox modal */
+#cover-modal {
+  border: none; padding: 0; background: transparent;
+  border-radius: var(--radius); max-width: 90vw;
+}
+#cover-modal::backdrop { background: rgba(0,0,0,.75); cursor: pointer; }
+.cover-modal-inner {
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+#cover-modal img {
+  max-width: min(500px, 85vw); max-height: 80vh;
+  border-radius: var(--radius-sm); display: block;
+}
+.cover-modal-link { font-size: 12px; color: var(--accent); text-decoration: none; }
+.cover-modal-link:hover { text-decoration: underline; }
 
 /* ── Series Detail ── */
 .series-detail { max-width: 1100px; }

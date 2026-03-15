@@ -21,6 +21,22 @@
     </main>
   </div>
 </div>
+
+<dialog id="cover-modal" onclick="if(event.target===this)this.close()">
+  <div class="cover-modal-inner">
+    <img id="cover-modal-img" src="" alt="Cover">
+    <a id="cover-modal-src" href="#" target="_blank" rel="noopener" class="cover-modal-link">↗ View on Perrypedia</a>
+  </div>
+</dialog>
+<script>
+function openCover(localUrl, srcUrl) {
+  var m = document.getElementById('cover-modal');
+  document.getElementById('cover-modal-img').src = localUrl;
+  var a = document.getElementById('cover-modal-src');
+  a.href = srcUrl || '#'; a.style.display = srcUrl ? '' : 'none';
+  m.showModal();
+}
+</script>
 </body>
 </html>
 {{end}}

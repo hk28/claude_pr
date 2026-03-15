@@ -13,10 +13,12 @@ import (
 type IssueVM struct {
 	Number      int
 	Title       string
+	Description string
 	Author      string
 	ReleaseDate string
 	SubSeries   string
 	CoverURL    string
+	SourceURL   string // Perrypedia page URL
 	States      map[string]bool
 	StateNames  []string // ordered list from series config
 	InboxAudio  string
@@ -93,10 +95,12 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 		}
 		if issue, ok := c.Get(cfg.SlugName, num); ok {
 			iv.Title = issue.Title
+			iv.Description = issue.Description
 			iv.Author = issue.Author
 			iv.ReleaseDate = issue.ReleaseDate
 			iv.SubSeries = issue.SubSeries
 			iv.CoverURL = issue.CoverURL
+			iv.SourceURL = issue.SourceURL
 			iv.CacheExists = true
 			if issue.CoverURL != "" {
 				vm.CoverURL = issue.CoverURL // keeps updating → ends up as latest issue's cover

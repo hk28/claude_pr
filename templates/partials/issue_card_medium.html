@@ -1,7 +1,7 @@
 {{define "issue_card_medium"}}
 {{$issue := .Issue}}
 <div class="card card-medium{{if not (index $issue.States "Released")}} card-unreleased{{end}}">
-  <div class="card-cover-wrap card-cover-sm">
+  <div class="card-cover-wrap card-cover-sm"{{if $issue.CoverURL}} onclick="openCover('{{$issue.CoverURL}}','{{$issue.SourceURL}}')" style="cursor:pointer"{{end}}>
     {{if $issue.CoverURL}}
     <img class="card-cover" src="{{$issue.CoverURL}}" alt="#{{$issue.Number}}" loading="lazy">
     {{else}}
@@ -11,13 +11,13 @@
     {{end}}
   </div>
   <div class="card-body">
-    <span class="card-title">{{if $issue.Title}}{{$issue.Title}}{{else}}#{{$issue.Number}}{{end}}</span>
-    <div class="card-meta">
+    <div class="card-title">{{if $issue.Title}}{{$issue.Title}}{{else}}#{{$issue.Number}}{{end}}</div>
+    <div class="card-meta meta-mono">
       <span class="card-count">#{{$issue.Number}}</span>
       {{if $issue.Author}}<span class="card-author">{{$issue.Author}}</span>{{end}}
       {{if $issue.ReleaseDate}}<span class="card-date">{{$issue.ReleaseDate}}</span>{{end}}
     </div>
-    {{if $issue.SubSeries}}<div class="card-latest">{{$issue.SubSeries}}</div>{{end}}
+    {{if $issue.Description}}<div class="card-description">{{$issue.Description}}</div>{{end}}
     <div class="card-states">
       {{range $name := $issue.StateNames}}
       {{$val := index $issue.States $name}}
