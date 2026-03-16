@@ -1,0 +1,32 @@
+name: Kartanin Miniserie
+subdir: "{{.SubSeries}} #{{printf \"%.02d\" .Number}} - {{.Title}}"
+title: '{{.Title}}'
+subtitle: '{{.SubSeries}} #{{.Number}}'
+subseries: 'Miniserie,{{.SubSeries}} #{{.Number}}'
+url: https://www.perrypedia.de/wiki/Quelle:PRKAR%d
+core: ""
+values:
+- name: Title
+  alias: 'Titel:'
+- name: Author
+  alias: 'Autor:'
+- name: ReleaseDate
+  alias: 'Erstmals erschienen:'
+- name: Description
+  alias: 'Untertitel:'
+- name: SubSeries
+  alias: 'Miniserie:'
+locations:
+  - what: audio
+    scanpattern: "kartanin %.03d"
+types:
+  - audio
+length: 12
+complete: true
+scanfrom: 1
+latest: 12
+states:
+  - Released
+  - Available
+  - Read
+  - Consumed

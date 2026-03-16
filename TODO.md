@@ -1,8 +1,15 @@
-- dif opf/json from calibre/abs
+- edit config files
+- - new series: create inbox folder (ask)
+- scan for new configs
+- restart button
+- more robust config: interval, last issue = 0,
+- copy existing ebook: overwrite (all)
+- diff opf/json from calibre/abs
 - link in opf/json
 - Test copy / Move???
 - set outbox state
 - remove series -> metadata
+  - clear cache only for series
 - only missing filter
 - docker, update, deploy
 - update/read config
@@ -10,3 +17,4 @@
 - auto save/backup state (git?)
 - collapse series in sidebar
 - pills clickable
+- - pin series: read only, no clear cache
