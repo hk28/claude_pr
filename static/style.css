@@ -137,6 +137,9 @@ code { font-family: monospace; font-size: 12px; }
 .badge-ok    { background: rgba(34,197,94,.15);  color: var(--ok);   border: 1px solid rgba(34,197,94,.3); }
 .badge-done  { background: rgba(99,102,241,.15); color: var(--done); border: 1px solid rgba(99,102,241,.3); }
 .badge-error { background: rgba(239,68,68,.15);  color: var(--error); border: 1px solid rgba(239,68,68,.3); }
+.badge-btn { cursor: pointer; font: inherit; }
+.badge-btn:hover { opacity: .8; }
+.badge-clearable:hover { background: rgba(239,68,68,.2); color: var(--error); border-color: rgba(239,68,68,.4); }
 .type-tag {
   display: inline-flex; align-items: center;
   font-size: 10px; font-weight: 600; padding: 2px 7px;

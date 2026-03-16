@@ -232,7 +232,31 @@ func (p *Processor) Scan(seriesSlug string) (ScanReport, error) {
 		}
 	}
 
+	// Clear stale inbox paths: paths recorded in state that no longer exist on disk.
+	p.clearStaleInbox(seriesSlug)
+
 	return report, nil
+}
+
+// clearStaleInbox removes InboxAudio/InboxEbook from state for any issue
+// whose recorded path no longer exists on disk.
+func (p *Processor) clearStaleInbox(seriesSlug string) {
+	st, err := p.State.Load(seriesSlug)
+	if err != nil {
+		return
+	}
+	for _, is := range st.Issues {
+		if is.InboxAudio != "" {
+			if _, err := os.Stat(is.InboxAudio); os.IsNotExist(err) {
+				_ = p.State.ClearInbox(seriesSlug, is.Number, "audio")
+			}
+		}
+		if is.InboxEbook != "" {
+			if _, err := os.Stat(is.InboxEbook); os.IsNotExist(err) {
+				_ = p.State.ClearInbox(seriesSlug, is.Number, "ebook")
+			}
+		}
+	}
 }
 
 // UpdateReport summarizes the result of an Update operation.
@@ -461,11 +485,14 @@ func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []strin
 }
 
 // moveEpub moves the first .epub file found at src (file or folder) into dstDir.
+// If src is a folder, it is removed after the epub is extracted.
 // Returns the destination file path.
 func moveEpub(src, dstDir string) (string, error) {
 	epubFile := src
+	srcIsDir := false
 	if strings.ToLower(filepath.Ext(src)) != ".epub" {
 		// src is a directory — find first epub inside
+		srcIsDir = true
 		entries, err := os.ReadDir(src)
 		if err != nil {
 			return "", err
@@ -482,14 +509,20 @@ func moveEpub(src, dstDir string) (string, error) {
 		}
 	}
 	dst := filepath.Join(dstDir, filepath.Base(epubFile))
-	if err := os.Rename(epubFile, dst); err == nil {
-		return dst, nil
+	if err := os.Rename(epubFile, dst); err != nil {
+		// Cross-filesystem fallback
+		if err := copyFile(epubFile, dst); err != nil {
+			return "", err
+		}
+		if err := os.Remove(epubFile); err != nil {
+			return "", err
+		}
 	}
-	// Cross-filesystem fallback
-	if err := copyFile(epubFile, dst); err != nil {
-		return "", err
+	// Remove the now-empty source folder so the scanner won't pick it up again
+	if srcIsDir {
+		os.RemoveAll(src)
 	}
-	return dst, os.Remove(epubFile)
+	return dst, nil
 }
 
 // moveDir moves src directory to dst by rename, falling back to recursive copy+remove

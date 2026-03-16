@@ -28,9 +28,11 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /series/{slug}/scan", s.handleScan)
 	mux.HandleFunc("POST /series/{slug}/update", s.handleUpdate)
 	mux.HandleFunc("POST /series/{slug}/refresh-metadata", s.handleRefreshMetadata)
+	mux.HandleFunc("GET /series/{slug}/cards", s.handleSeriesCards)
 	mux.HandleFunc("GET /series/{slug}/copy-preview", s.handleCopyPreview)
 	mux.HandleFunc("POST /series/{slug}/copy", s.handleCopy)
 	mux.HandleFunc("POST /series/{slug}/issue/{num}/state", s.handleToggleState)
+	mux.HandleFunc("POST /series/{slug}/issue/{num}/set-output", s.handleSetOutput)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("GET /covers/", http.StripPrefix("/covers/", http.FileServer(http.Dir(s.proc.Cache.CoversDir))))
 	mux.HandleFunc("POST /series/{slug}/clear-cache", s.handleClearCache)
@@ -76,6 +78,23 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	s.renderPage(w, "index.html", vm)
 }
 
+func (s *Server) handleSeriesCards(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	cfg, ok := s.proc.SeriesBySlug(slug)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+	viewMode := r.URL.Query().Get("view")
+	if viewMode == "" {
+		viewMode = "details"
+	}
+	st, _ := s.proc.State.Load(slug)
+	svm := BuildSeriesVM(cfg, st, s.proc.Cache)
+	svm.ViewMode = viewMode
+	s.renderPartial(w, "series_cards", svm)
+}
+
 func (s *Server) handleSeriesDetail(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	cfg, ok := s.proc.SeriesBySlug(slug)
@@ -98,6 +117,7 @@ func (s *Server) handleSeriesDetail(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	report, err := s.proc.Scan(slug)
+	w.Header().Set("HX-Trigger", "seriesRefresh")
 	s.renderPartial(w, "scan_preview", map[string]any{
 		"Report": report,
 		"Error":  errStr(err),
@@ -108,6 +128,7 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	report, err := s.proc.Update(slug)
+	w.Header().Set("HX-Trigger", "seriesRefresh")
 	s.renderPartial(w, "update_result", map[string]any{
 		"Report": report,
 		"Error":  errStr(err),
@@ -167,6 +188,7 @@ func (s *Server) handleCopy(w http.ResponseWriter, r *http.Request) {
 		errs = s.proc.CopyExecute(slug, actions)
 	}
 	pending, _ := splitActions(actions)
+	w.Header().Set("HX-Trigger", "seriesRefresh")
 	s.renderPartial(w, "copy_result", map[string]any{
 		"Errors": errs,
 		"Count":  len(pending) - len(errs),
@@ -203,6 +225,47 @@ func (s *Server) handleToggleState(w http.ResponseWriter, r *http.Request) {
 	st, _ := s.proc.State.Load(slug)
 	vm := BuildSeriesVM(cfg, st, s.proc.Cache)
 	s.renderPartial(w, "sidebar_series", vm)
+}
+
+func (s *Server) handleSetOutput(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	numStr := r.PathValue("num")
+	num, err := strconv.Atoi(numStr)
+	if err != nil {
+		http.Error(w, "invalid issue number", http.StatusBadRequest)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad form", http.StatusBadRequest)
+		return
+	}
+	mediaType := r.FormValue("mediaType")
+	path := ""
+	if r.FormValue("action") == "set" {
+		path = "manual"
+	}
+	if err := s.proc.State.UpdateOutput(slug, num, mediaType, path); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	cfg, ok := s.proc.SeriesBySlug(slug)
+	if !ok {
+		http.Error(w, "series not found", http.StatusNotFound)
+		return
+	}
+	st, _ := s.proc.State.Load(slug)
+	vm := BuildSeriesVM(cfg, st, s.proc.Cache)
+	var issueVM IssueVM
+	for _, iv := range vm.Issues {
+		if iv.Number == num {
+			issueVM = iv
+			break
+		}
+	}
+	s.renderPartial(w, "issue_output_cell", map[string]any{
+		"Slug":  slug,
+		"Issue": issueVM,
+	})
 }
 
 func (s *Server) renderPage(w http.ResponseWriter, name string, data any) {

@@ -1,7 +1,7 @@
 {{define "series_detail"}}
 {{$slug := .Config.SlugName}}
 {{$view := .ViewMode}}
-<div class="series-detail">
+<div class="series-detail" id="series-content">
   <div class="detail-header">
     <h2>{{.Config.Name}}</h2>
     <div class="detail-types">
@@ -55,6 +55,19 @@
 
   <div id="action-result" class="action-result"></div>
 
+  {{template "series_cards" .}}
+
+</div>
+{{end}}
+
+{{define "series_cards"}}
+{{$slug := .Config.SlugName}}
+{{$view := .ViewMode}}
+<div id="series-cards"
+     hx-get="/series/{{$slug}}/cards?view={{$view}}"
+     hx-trigger="seriesRefresh from:body"
+     hx-swap="outerHTML">
+
   {{if eq $view "big"}}
   <div class="cards-grid cards-big">
     {{range .Issues}}{{if (index .States "Released")}}
@@ -102,10 +115,7 @@
             {{if $issue.InboxAudio}}<span class="badge badge-ok" title="{{$issue.InboxAudio}}">audio</span>{{end}}
             {{if $issue.InboxEbook}}<span class="badge badge-ok" title="{{$issue.InboxEbook}}">ebook</span>{{end}}
           </td>
-          <td class="col-output">
-            {{if $issue.OutputAudio}}<span class="badge badge-done">audio</span>{{end}}
-            {{if $issue.OutputEbook}}<span class="badge badge-done">ebook</span>{{end}}
-          </td>
+          {{template "issue_output_cell" (dict "Slug" $slug "Issue" $issue)}}
         </tr>
         {{end}}
       </tbody>
@@ -118,4 +128,24 @@
   {{end}}{{end}}
 
 </div>
+{{end}}
+
+{{define "issue_output_cell"}}
+{{$slug := .Slug}}{{$n := .Issue.Number}}
+<td class="col-output" id="output-{{$slug}}-{{$n}}">
+  {{if .Issue.OutputAudio}}
+  <button class="badge badge-done badge-btn badge-clearable"
+    hx-post="/series/{{$slug}}/issue/{{$n}}/set-output"
+    hx-vals='{"mediaType":"audio","action":"clear"}'
+    hx-target="#output-{{$slug}}-{{$n}}" hx-swap="outerHTML"
+    title="{{.Issue.OutputAudio}} — click to clear">audio ×</button>
+  {{end}}
+  {{if .Issue.OutputEbook}}
+  <button class="badge badge-done badge-btn badge-clearable"
+    hx-post="/series/{{$slug}}/issue/{{$n}}/set-output"
+    hx-vals='{"mediaType":"ebook","action":"clear"}'
+    hx-target="#output-{{$slug}}-{{$n}}" hx-swap="outerHTML"
+    title="{{.Issue.OutputEbook}} — click to clear">ebook ×</button>
+  {{end}}
+</td>
 {{end}}
