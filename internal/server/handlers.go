@@ -134,11 +134,24 @@ func (s *Server) handleClearCache(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func splitActions(all []processor.CopyAction) (pending, done []processor.CopyAction) {
+	for _, a := range all {
+		if a.AlreadyDone {
+			done = append(done, a)
+		} else {
+			pending = append(pending, a)
+		}
+	}
+	return
+}
+
 func (s *Server) handleCopyPreview(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	actions, err := s.proc.CopyPreview(slug)
+	pending, done := splitActions(actions)
 	s.renderPartial(w, "copy_preview", map[string]any{
-		"Actions": actions,
+		"Actions": pending,
+		"Done":    done,
 		"Error":   errStr(err),
 		"Slug":    slug,
 	})
@@ -153,9 +166,10 @@ func (s *Server) handleCopy(w http.ResponseWriter, r *http.Request) {
 	} else {
 		errs = s.proc.CopyExecute(slug, actions)
 	}
+	pending, _ := splitActions(actions)
 	s.renderPartial(w, "copy_result", map[string]any{
 		"Errors": errs,
-		"Count":  len(actions) - len(errs),
+		"Count":  len(pending) - len(errs),
 		"Slug":   slug,
 	})
 }

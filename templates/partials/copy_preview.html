@@ -2,10 +2,9 @@
 <div class="action-card">
   {{if .Error}}
   <div class="error-box">Error: {{.Error}}</div>
-  {{else if not .Actions}}
-  <p class="text-muted">Nothing pending to copy.</p>
   {{else}}
-  <h4>Copy Preview — {{len .Actions}} action(s)</h4>
+  {{if .Actions}}
+  <h4>Pending — {{len .Actions}} action(s)</h4>
   <table class="preview-table">
     <thead>
       <tr><th>#</th><th>Type</th><th>Source</th><th>Destination</th></tr>
@@ -30,6 +29,27 @@
       Execute Copy
     </button>
   </div>
+  {{else}}
+  <p class="text-muted">Nothing pending to copy.</p>
+  {{end}}
+  {{if .Done}}
+  <h4 style="margin-top:1rem">Already copied — {{len .Done}} item(s)</h4>
+  <table class="preview-table" style="opacity:.6">
+    <thead>
+      <tr><th>#</th><th>Type</th><th>Source</th><th>Output</th></tr>
+    </thead>
+    <tbody>
+      {{range .Done}}
+      <tr>
+        <td>{{.Number}}</td>
+        <td><span class="tag-{{.MediaType}} type-tag">{{.MediaType}}</span></td>
+        <td><code class="path">{{.SrcPath}}</code></td>
+        <td><code class="path">{{.DstDir}}</code></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
   {{end}}
 </div>
 {{end}}

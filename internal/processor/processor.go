@@ -325,11 +325,12 @@ func calcLatest(cfg config.SeriesConfig) int {
 
 // CopyAction describes a single inbox→output copy operation.
 type CopyAction struct {
-	Number    int
-	MediaType string // "audio" or "ebook"
-	SrcPath   string
-	DstDir    string // destination directory (not yet created)
-	DstName   string // rendered folder name
+	Number      int
+	MediaType   string // "audio" or "ebook"
+	SrcPath     string
+	DstDir      string // destination directory (not yet created)
+	DstName     string // rendered folder name
+	AlreadyDone bool   // inbox present but already copied to output — display only, not executed
 }
 
 // CopyPreview returns the list of copy actions that would be executed, without doing them.
@@ -360,23 +361,37 @@ func (p *Processor) CopyPreview(seriesSlug string) ([]CopyAction, error) {
 			subdir = fmt.Sprintf("issue-%d", is.Number)
 		}
 
-		if is.InboxAudio != "" && is.OutputAudio == "" {
-			actions = append(actions, CopyAction{
-				Number:    is.Number,
-				MediaType: "audio",
-				SrcPath:   is.InboxAudio,
-				DstDir:    filepath.Join(p.Main.OutputAudio, cfg.Name),
-				DstName:   subdir,
-			})
+		if is.InboxAudio != "" {
+			if is.OutputAudio != "" {
+				actions = append(actions, CopyAction{
+					Number: is.Number, MediaType: "audio",
+					SrcPath: is.InboxAudio, DstDir: is.OutputAudio, AlreadyDone: true,
+				})
+			} else if _, err := os.Stat(is.InboxAudio); err == nil {
+				actions = append(actions, CopyAction{
+					Number:    is.Number,
+					MediaType: "audio",
+					SrcPath:   is.InboxAudio,
+					DstDir:    filepath.Join(p.Main.OutputAudio, cfg.Name),
+					DstName:   subdir,
+				})
+			} // else: source gone — skip silently
 		}
-		if is.InboxEbook != "" && is.OutputEbook == "" {
-			actions = append(actions, CopyAction{
-				Number:    is.Number,
-				MediaType: "ebook",
-				SrcPath:   is.InboxEbook,
-				DstDir:    filepath.Join(p.Main.OutputEbook, cfg.Name),
-				DstName:   subdir,
-			})
+		if is.InboxEbook != "" {
+			if is.OutputEbook != "" {
+				actions = append(actions, CopyAction{
+					Number: is.Number, MediaType: "ebook",
+					SrcPath: is.InboxEbook, DstDir: is.OutputEbook, AlreadyDone: true,
+				})
+			} else if _, err := os.Stat(is.InboxEbook); err == nil {
+				actions = append(actions, CopyAction{
+					Number:    is.Number,
+					MediaType: "ebook",
+					SrcPath:   is.InboxEbook,
+					DstDir:    filepath.Join(p.Main.OutputEbook, cfg.Name),
+					DstName:   subdir,
+				})
+			} // else: source gone — skip silently
 		}
 	}
 
@@ -392,6 +407,9 @@ func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []strin
 	}
 
 	for _, a := range actions {
+		if a.AlreadyDone {
+			continue
+		}
 		dst := filepath.Join(a.DstDir, a.DstName)
 		if err := os.MkdirAll(dst, 0755); err != nil {
 			errs = append(errs, fmt.Sprintf("#%d: mkdir: %v", a.Number, err))

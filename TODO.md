@@ -1,3 +1,5 @@
+- dif opf/json from calibre/abs
+- link in opf/json
 - Test copy / Move???
 - set outbox state
 - remove series -> metadata
