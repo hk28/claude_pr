@@ -2,5 +2,6 @@ prman
 scrapedbg
 data/covers/
 data/cache/
+data/state/
 testfolder/
 output/
