@@ -135,6 +135,10 @@ func (m *Manager) UpdateInbox(slug string, number int, mediaType string, path st
 	return m.Save(s)
 }
 
+func (m *Manager) ClearInbox(slug string, number int, mediaType string) error {
+	return m.UpdateInbox(slug, number, mediaType, "")
+}
+
 func (m *Manager) UpdateOutput(slug string, number int, mediaType string, path string) error {
 	s, err := m.Load(slug)
 	if err != nil {

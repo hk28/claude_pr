@@ -398,7 +398,9 @@ func (p *Processor) CopyPreview(seriesSlug string) ([]CopyAction, error) {
 	return actions, nil
 }
 
-// CopyExecute performs the copy actions and writes metadata files.
+// CopyExecute moves files from inbox to output and writes metadata.
+// Ebooks: only the .epub file is moved into DstDir/DstName/.
+// Audio: the entire source folder is renamed/moved to DstDir/DstName.
 func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []string {
 	cfg, ok := p.SeriesBySlug(seriesSlug)
 	var errs []string
@@ -411,22 +413,36 @@ func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []strin
 			continue
 		}
 		dst := filepath.Join(a.DstDir, a.DstName)
-		if err := os.MkdirAll(dst, 0755); err != nil {
-			errs = append(errs, fmt.Sprintf("#%d: mkdir: %v", a.Number, err))
-			continue
-		}
 
-		// Copy all files from src to dst
-		if err := copyDir(a.SrcPath, dst); err != nil {
-			errs = append(errs, fmt.Sprintf("#%d: copy: %v", a.Number, err))
-			continue
-		}
+		switch a.MediaType {
+		case "ebook":
+			if err := os.MkdirAll(dst, 0755); err != nil {
+				errs = append(errs, fmt.Sprintf("#%d: mkdir: %v", a.Number, err))
+				continue
+			}
+			if _, err := moveEpub(a.SrcPath, dst); err != nil {
+				errs = append(errs, fmt.Sprintf("#%d: move epub: %v", a.Number, err))
+				continue
+			}
+			issue, hasCached := p.Cache.Get(seriesSlug, a.Number)
+			if hasCached {
+				opf, err := metadata.GenerateOPF(cfg, issue, a.Number)
+				if err == nil {
+					_ = os.WriteFile(filepath.Join(dst, fmt.Sprintf("%d.opf", a.Number)), []byte(opf), 0644)
+				}
+			}
 
-		// Write metadata
-		issue, hasCached := p.Cache.Get(seriesSlug, a.Number)
-		if hasCached {
-			switch a.MediaType {
-			case "audio":
+		case "audio":
+			if err := os.MkdirAll(a.DstDir, 0755); err != nil {
+				errs = append(errs, fmt.Sprintf("#%d: mkdir: %v", a.Number, err))
+				continue
+			}
+			if err := moveDir(a.SrcPath, dst); err != nil {
+				errs = append(errs, fmt.Sprintf("#%d: move audio: %v", a.Number, err))
+				continue
+			}
+			issue, hasCached := p.Cache.Get(seriesSlug, a.Number)
+			if hasCached {
 				m, err := metadata.GenerateAudio(cfg, issue)
 				if err == nil {
 					b, err := metadata.MarshalAudio(m)
@@ -434,35 +450,79 @@ func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []strin
 						_ = os.WriteFile(filepath.Join(dst, "metadata.json"), b, 0644)
 					}
 				}
-			case "ebook":
-				opf, err := metadata.GenerateOPF(cfg, issue, a.Number)
-				if err == nil {
-					_ = os.WriteFile(filepath.Join(dst, fmt.Sprintf("%d.opf", a.Number)), []byte(opf), 0644)
-				}
 			}
 		}
 
-		// Update state
 		_ = p.State.UpdateOutput(seriesSlug, a.Number, a.MediaType, dst)
+		_ = p.State.ClearInbox(seriesSlug, a.Number, a.MediaType)
 	}
 
 	return errs
 }
 
-// copyDir copies all files from src directory into dst directory (non-recursive).
-func copyDir(src, dst string) error {
+// moveEpub moves the first .epub file found at src (file or folder) into dstDir.
+// Returns the destination file path.
+func moveEpub(src, dstDir string) (string, error) {
+	epubFile := src
+	if strings.ToLower(filepath.Ext(src)) != ".epub" {
+		// src is a directory — find first epub inside
+		entries, err := os.ReadDir(src)
+		if err != nil {
+			return "", err
+		}
+		epubFile = ""
+		for _, e := range entries {
+			if !e.IsDir() && strings.ToLower(filepath.Ext(e.Name())) == ".epub" {
+				epubFile = filepath.Join(src, e.Name())
+				break
+			}
+		}
+		if epubFile == "" {
+			return "", fmt.Errorf("no epub file found in %s", src)
+		}
+	}
+	dst := filepath.Join(dstDir, filepath.Base(epubFile))
+	if err := os.Rename(epubFile, dst); err == nil {
+		return dst, nil
+	}
+	// Cross-filesystem fallback
+	if err := copyFile(epubFile, dst); err != nil {
+		return "", err
+	}
+	return dst, os.Remove(epubFile)
+}
+
+// moveDir moves src directory to dst by rename, falling back to recursive copy+remove
+// for cross-filesystem moves.
+func moveDir(src, dst string) error {
+	if err := os.Rename(src, dst); err == nil {
+		return nil
+	}
+	if err := copyDirAll(src, dst); err != nil {
+		return err
+	}
+	return os.RemoveAll(src)
+}
+
+func copyDirAll(src, dst string) error {
+	if err := os.MkdirAll(dst, 0755); err != nil {
+		return err
+	}
 	entries, err := os.ReadDir(src)
 	if err != nil {
 		return err
 	}
 	for _, e := range entries {
+		s := filepath.Join(src, e.Name())
+		d := filepath.Join(dst, e.Name())
 		if e.IsDir() {
-			continue // skip subdirs
-		}
-		srcFile := filepath.Join(src, e.Name())
-		dstFile := filepath.Join(dst, e.Name())
-		if err := copyFile(srcFile, dstFile); err != nil {
-			return err
+			if err := copyDirAll(s, d); err != nil {
+				return err
+			}
+		} else {
+			if err := copyFile(s, d); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -474,13 +534,11 @@ func copyFile(src, dst string) error {
 		return err
 	}
 	defer in.Close()
-
 	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
-
 	_, err = io.Copy(out, in)
 	return err
 }
