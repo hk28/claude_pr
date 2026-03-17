@@ -5,3 +5,4 @@ data/cache/
 data/state/
 testfolder/
 output/
+config-local/main.yaml

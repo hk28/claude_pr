@@ -1,0 +1,13 @@
+services:
+  prman:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./testfolder/inbox/audio:/inbox/audio
+      - ./testfolder/inbox/ebook:/inbox/ebook
+      - ./testfolder/outbox/audio:/outbox/audio
+      - ./testfolder/outbox/ebook:/outbox/ebook
+    restart: unless-stopped

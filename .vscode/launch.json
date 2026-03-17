@@ -10,7 +10,7 @@
 			"request": "launch",
 			"mode": "debug",
 			"program": "${workspaceFolder}",
-			"args": ["-config", "./config"],
+			"args": ["-config", "./config-local"],
 			"cwd": "${workspaceFolder}"
 		}
 	]
