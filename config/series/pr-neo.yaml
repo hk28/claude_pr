@@ -17,7 +17,7 @@ values:
     alias: 'Zyklus:'
 locations:
   - what: audio
-    scanpattern: "neo %.03d"
+    scanpattern: "neo"
 interval: 14
 anchor:
   number: 278

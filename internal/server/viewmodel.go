@@ -39,7 +39,8 @@ type SeriesVM struct {
 	Config               config.SeriesConfig
 	Issues               []IssueVM
 	CoverURL             string // cover of the latest issue that has one
-	MissingAudio         int    // in inbox, not yet copied to output
+	LatestReleaseDate    string // release date of the most recent cached issue
+	MissingAudio         int   // in inbox, not yet copied to output
 	MissingEbook         int
 	MissingReleasedAudio int // released but not yet in inbox
 	MissingReleasedEbook int
@@ -49,12 +50,15 @@ type SeriesVM struct {
 
 // PageVM is the top-level view model for all pages (index + series detail).
 type PageVM struct {
-	Series        []SeriesVM
-	CurrentSeries *SeriesVM // non-nil on series detail page
-	ViewMode      string    // "big", "medium", "details"
-	FilterSlug    string
-	FilterType    string // "audio", "ebook", ""
-	OnlyMissing   bool
+	Series            []SeriesVM
+	CurrentSeries     *SeriesVM // non-nil on series detail page
+	ViewMode          string    // "big", "medium", "details"
+	FilterSlug        string
+	FilterType        string // "audio", "ebook", ""
+	OnlyMissing       bool
+	SortOrder         string // "name" or "date"
+	TotalMissingAudio int
+	TotalMissingEbook int
 }
 
 // cacheGetter is satisfied by *cache.Cache.
@@ -104,6 +108,9 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 			iv.CacheExists = true
 			if issue.CoverURL != "" {
 				vm.CoverURL = issue.CoverURL // keeps updating → ends up as latest issue's cover
+			}
+			if issue.ReleaseDate != "" {
+				vm.LatestReleaseDate = issue.ReleaseDate
 			}
 		}
 

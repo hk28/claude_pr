@@ -137,6 +137,17 @@ a:hover { color: var(--accent-hover); }
 .sidebar-count { font-size: 11px; color: var(--text-muted); }
 .sidebar-missing { margin-top: 5px; display: flex; gap: 4px; flex-wrap: wrap; }
 
+/* Sidebar button bar */
+.sidebar-btnbar {
+  display: flex; gap: 5px; padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-iconbtn { flex: 1; padding: 4px 8px; font-size: 11px; justify-content: center; }
+
+/* Totals section */
+.sidebar-section-totals { border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+
 /* ── Topbar ── */
 .topbar {
   background: var(--bg-glass);

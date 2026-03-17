@@ -75,12 +75,19 @@ func ScanInbox(cfg config.SeriesConfig, mainCfg config.MainConfig) ([]ScanResult
 
 // patternToRegexp converts a scanf-style pattern like "pr %.04d" to a regexp.
 // Supported verbs: %d, %.Nd (zero-padded decimal).
+// If the pattern contains no format verb, it is treated as a keyword: any
+// filename that contains the keyword and has a number anywhere in it matches,
+// and the first number found is used as the issue number.
 func patternToRegexp(pattern string) (*regexp.Regexp, error) {
-	// Replace format verbs with a placeholder BEFORE QuoteMeta so the
-	// percent sign and dot don't interfere with regex escaping.
 	const placeholder = "__NUM__"
 	verbRe := regexp.MustCompile(`%\.?\d*d`)
-	s := verbRe.ReplaceAllString(strings.ToLower(pattern), placeholder)
+	lower := strings.ToLower(pattern)
+	if !verbRe.MatchString(lower) {
+		// Keyword-only pattern: match anything containing the keyword plus a number.
+		kw := regexp.QuoteMeta(strings.TrimSpace(lower))
+		return regexp.Compile(`.*` + kw + `.*?(\d+).*`)
+	}
+	s := verbRe.ReplaceAllString(lower, placeholder)
 	s = regexp.QuoteMeta(s)
 	s = strings.ReplaceAll(s, placeholder, `(\d+)`)
 	return regexp.Compile("^" + s + "$")

@@ -1,0 +1,32 @@
+name: Wega Miniserie
+subdir: "PR Miniserien/12 - Wega/{{.SubSeries}} #{{printf \"%.02d\" .Number}} - {{.Title}}"
+title: '{{.Title}}'
+subtitle: '{{.SubSeries}} #{{.Number}}'
+subseries: 'Miniserie,{{.SubSeries}} #{{.Number}}'
+url: https://www.perrypedia.de/wiki/Quelle:PRW%d
+core: ""
+values:
+- name: Title
+  alias: 'Titel:'
+- name: Author
+  alias: 'Autor:'
+- name: ReleaseDate
+  alias: 'Erstmals erschienen:'
+- name: Description
+  alias: 'Untertitel:'
+- name: SubSeries
+  alias: 'Miniserie:'
+locations:
+  - what: audio
+    scanpattern: "wega %.03d"
+types:
+  - audio
+length: 12
+complete: true
+scanfrom: 1
+latest: 12
+states:
+  - Released
+  - Available
+  - Read
+  - Consumed

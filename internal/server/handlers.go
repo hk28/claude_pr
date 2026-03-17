@@ -3,7 +3,10 @@ package server
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
+	"path/filepath"
+	"sort"
 	"strconv"
 
 	"github.com/hk28/prman/internal/config"
@@ -11,14 +14,15 @@ import (
 )
 
 type Server struct {
-	proc   *processor.Processor
-	tmpls  *template.Template
-	series []config.SeriesConfig
-	main   config.MainConfig
+	proc      *processor.Processor
+	tmpls     *template.Template
+	series    []config.SeriesConfig
+	main      config.MainConfig
+	configDir string
 }
 
-func New(proc *processor.Processor, series []config.SeriesConfig, main config.MainConfig, tmpls *template.Template) *Server {
-	return &Server{proc: proc, tmpls: tmpls, series: series, main: main}
+func New(proc *processor.Processor, series []config.SeriesConfig, main config.MainConfig, tmpls *template.Template, configDir string) *Server {
+	return &Server{proc: proc, tmpls: tmpls, series: series, main: main, configDir: configDir}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -36,10 +40,11 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("GET /covers/", http.StripPrefix("/covers/", http.FileServer(http.Dir(s.proc.Cache.CoversDir))))
 	mux.HandleFunc("POST /series/{slug}/clear-cache", s.handleClearCache)
+	mux.HandleFunc("POST /reload-config", s.handleReloadConfig)
 	return mux
 }
 
-func (s *Server) buildPageVM(viewMode, filterSlug, filterType string, onlyMissing bool) PageVM {
+func (s *Server) buildPageVM(viewMode, filterSlug, filterType, sortOrder string, onlyMissing bool) PageVM {
 	var vms []SeriesVM
 	for _, cfg := range s.series {
 		st, _ := s.proc.State.Load(cfg.SlugName)
@@ -47,13 +52,44 @@ func (s *Server) buildPageVM(viewMode, filterSlug, filterType string, onlyMissin
 		vm.ViewMode = viewMode
 		vms = append(vms, vm)
 	}
-	return PageVM{
-		Series:      vms,
-		ViewMode:    viewMode,
-		FilterSlug:  filterSlug,
-		FilterType:  filterType,
-		OnlyMissing: onlyMissing,
+	if sortOrder == "date" {
+		sort.Slice(vms, func(i, j int) bool {
+			return vms[i].LatestReleaseDate > vms[j].LatestReleaseDate
+		})
+	} else {
+		sortOrder = "name"
+		sort.Slice(vms, func(i, j int) bool {
+			return vms[i].Config.Name < vms[j].Config.Name
+		})
 	}
+	var totalAudio, totalEbook int
+	for _, vm := range vms {
+		totalAudio += vm.MissingReleasedAudio
+		totalEbook += vm.MissingReleasedEbook
+	}
+	return PageVM{
+		Series:            vms,
+		ViewMode:          viewMode,
+		FilterSlug:        filterSlug,
+		FilterType:        filterType,
+		OnlyMissing:       onlyMissing,
+		SortOrder:         sortOrder,
+		TotalMissingAudio: totalAudio,
+		TotalMissingEbook: totalEbook,
+	}
+}
+
+func (s *Server) handleReloadConfig(w http.ResponseWriter, r *http.Request) {
+	series, err := config.LoadSeries(filepath.Join(s.configDir, "series"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	s.series = series
+	s.proc.Series = series
+	log.Printf("reloaded config: %d series", len(series))
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
@@ -68,8 +104,9 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	filterSlug := r.URL.Query().Get("series")
 	filterType := r.URL.Query().Get("type")
 	onlyMissing := r.URL.Query().Get("missing") == "1"
+	sortOrder := r.URL.Query().Get("sort")
 
-	vm := s.buildPageVM(viewMode, filterSlug, filterType, onlyMissing)
+	vm := s.buildPageVM(viewMode, filterSlug, filterType, sortOrder, onlyMissing)
 
 	if r.Header.Get("HX-Request") == "true" && r.Header.Get("HX-Target") == "main-content" {
 		s.renderPartial(w, "main_content", vm)
@@ -109,7 +146,8 @@ func (s *Server) handleSeriesDetail(w http.ResponseWriter, r *http.Request) {
 	st, _ := s.proc.State.Load(slug)
 	svm := BuildSeriesVM(cfg, st, s.proc.Cache)
 	svm.ViewMode = viewMode
-	page := s.buildPageVM(viewMode, slug, "", false)
+	sortOrder := r.URL.Query().Get("sort")
+	page := s.buildPageVM(viewMode, slug, "", sortOrder, false)
 	page.CurrentSeries = &svm
 	s.renderPage(w, "series_detail.html", page)
 }

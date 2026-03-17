@@ -53,7 +53,7 @@ func main() {
 		log.Fatalf("loading templates: %v", err)
 	}
 
-	srv := server.New(proc, seriesCfgs, mainCfg, tmpls)
+	srv := server.New(proc, seriesCfgs, mainCfg, tmpls, *configDir)
 
 	log.Printf("prman listening on http://localhost%s", *addr)
 	if err := http.ListenAndServe(*addr, srv.Handler()); err != nil {
