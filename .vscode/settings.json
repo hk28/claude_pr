@@ -1,0 +1,5 @@
+{
+	"go.alternateTools": {
+		"dlv": "/home/hk28/go/bin/dlv"
+	}
+}

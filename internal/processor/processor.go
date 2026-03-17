@@ -179,7 +179,7 @@ func (p *Processor) ClearCache(slug string) error {
 // ScanReport summarizes the result of a Scan operation.
 type ScanReport struct {
 	Found       []scanner.ScanResult
-	Fetched     []int    // issue numbers newly cached
+	Fetched     []int // issue numbers newly cached
 	Errors      []string
 	ScannedDirs []string // inbox directories that were searched
 }
@@ -261,10 +261,10 @@ func (p *Processor) clearStaleInbox(seriesSlug string) {
 
 // UpdateReport summarizes the result of an Update operation.
 type UpdateReport struct {
-	LatestIssue  int
-	MarkedCount  int
-	Fetched      []int    // issue numbers newly fetched during update
-	FetchErrors  []string
+	LatestIssue int
+	MarkedCount int
+	Fetched     []int // issue numbers newly fetched during update
+	FetchErrors []string
 }
 
 // Update calculates which issues should be released, marks them in state,
@@ -396,7 +396,7 @@ func (p *Processor) CopyPreview(seriesSlug string) ([]CopyAction, error) {
 					Number:    is.Number,
 					MediaType: "audio",
 					SrcPath:   is.InboxAudio,
-					DstDir:    filepath.Join(p.Main.OutputAudio, cfg.Name),
+					DstDir:    p.Main.OutputAudio,
 					DstName:   subdir,
 				})
 			} // else: source gone — skip silently
@@ -412,7 +412,7 @@ func (p *Processor) CopyPreview(seriesSlug string) ([]CopyAction, error) {
 					Number:    is.Number,
 					MediaType: "ebook",
 					SrcPath:   is.InboxEbook,
-					DstDir:    filepath.Join(p.Main.OutputEbook, cfg.Name),
+					DstDir:    p.Main.OutputEbook,
 					DstName:   subdir,
 				})
 			} // else: source gone — skip silently

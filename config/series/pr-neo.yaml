@@ -1,5 +1,5 @@
-name: Pr.Neo
-subdir: "PR Neo #{{printf \"%.03d\" .Number}} - {{.Title}}"
+name: NEO 300-
+subdir: "Perry Rhodan NEO/NEO 300-/PR Neo #{{printf \"%.03d\" .Number}} - {{.Title}}"
 title: 'Neo #{{.Number}} - {{.Title}}'
 subtitle: '{{.SubSeries}}'
 subseries: 'PR Neo #{{.Number}},{{.SubSeries}} (Neo)'

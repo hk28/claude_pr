@@ -1,5 +1,5 @@
 name: Kartanin Miniserie
-subdir: "{{.SubSeries}} #{{printf \"%.02d\" .Number}} - {{.Title}}"
+subdir: "PR Miniserien/12 - Kartanin/{{.SubSeries}} #{{printf \"%.02d\" .Number}} - {{.Title}}"
 title: '{{.Title}}'
 subtitle: '{{.SubSeries}} #{{.Number}}'
 subseries: 'Miniserie,{{.SubSeries}} #{{.Number}}'

@@ -37,7 +37,7 @@ echo "=== Pr.Neo (audio only) ==="
 read -r n1 n2 <<< "$(rand2 301 340)"
 for n in $n1 $n2; do
     pad=$(printf '%03d' "$n")
-    dir="$AUDIO/Pr.Neo/neo $pad"
+    dir="$AUDIO/NEO 300-/neo $pad"
     mkdir -p "$dir"
     touch "$dir/neo $pad.mp3"
     echo "  audio  $dir"
