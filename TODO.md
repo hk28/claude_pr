@@ -1,12 +1,12 @@
-- [ ] Sidebar: Overall missing pill
-- [ ] collapse series in sidebar
-- [ ] sidebar: scan for new configs
-- [ ] update/read config
-- [ ] edit config files
+- [x] Sidebar: Overall missing pill
+- [-] collapse series in sidebar
+- [x] sidebar: scan for new configs
+- [x] update/read config
+- [-] edit config files
   - [ ] new series: create inbox folder (ask)
 - [ ] restart button
 - [ ] more robust config: interval, last issue = 0,
-- [ ] copy existing ebook: overwrite (all)
+- [-] copy existing ebook: overwrite (all)
 - [ ] diff opf/json from calibre/abs
 - [x] link in opf/json
 - [x] Test copy / Move???

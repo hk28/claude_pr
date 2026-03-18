@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -22,6 +23,13 @@ func main() {
 	dataDir := flag.String("data", "./data", "path to data directory")
 	addr := flag.String("addr", ":8080", "listen address")
 	flag.Parse()
+
+	logFile, err := os.OpenFile("log.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("opening log file: %v", err)
+	}
+	defer logFile.Close()
+	log.SetOutput(io.MultiWriter(os.Stderr, logFile))
 
 	mainCfg, seriesCfgs, err := config.LoadAll(*configDir)
 	if err != nil {

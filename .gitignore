@@ -6,3 +6,4 @@ data/state/
 testfolder/
 output/
 config-local/main.yaml
+log.txt
