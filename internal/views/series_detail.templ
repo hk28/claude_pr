@@ -1,0 +1,231 @@
+package views
+
+import "fmt"
+
+templ SeriesDetail(vm SeriesVM) {
+	<div class="max-w-[1100px]" id="series-content">
+		<div class="flex items-center gap-4 flex-wrap mb-6 pb-[18px] border-b border-white/[.07]">
+			<h2 class="text-[22px] font-extrabold tracking-[-0.02em]">{ vm.Config.Name }</h2>
+			<div class="flex gap-2">
+				for _, t := range vm.Config.Types {
+					<span class={ TypeTagClass(t) }>{ t }</span>
+				}
+			</div>
+			<div class="flex gap-0.5 bg-[#18182a] rounded-[7px] p-0.5">
+				<a class={ ViewBtnClass(vm.ViewMode == "big") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=big") } data-view="big">Big</a>
+				<a class={ ViewBtnClass(vm.ViewMode == "medium") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=medium") } data-view="medium">Medium</a>
+				<a class={ ViewBtnClass(vm.ViewMode == "details") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=details") } data-view="details">Details</a>
+			</div>
+			<div class="flex gap-2 ml-auto flex-wrap">
+				<button
+					class={ BtnPrimary }
+					hx-post={ "/series/" + vm.Config.SlugName + "/scan" }
+					hx-target="#action-result"
+					hx-swap="innerHTML"
+					hx-indicator="#action-spinner"
+				>
+					<span class="htmx-indicator animate-spin" id="action-spinner">⟳</span>
+					Scan Inbox
+				</button>
+				<button
+					class={ BtnSecondary }
+					hx-post={ "/series/" + vm.Config.SlugName + "/update" }
+					hx-target="#action-result"
+					hx-swap="innerHTML"
+				>Update Released</button>
+				<button
+					class={ BtnSecondary }
+					hx-post={ "/series/" + vm.Config.SlugName + "/refresh-metadata" }
+					hx-target="#action-result"
+					hx-swap="innerHTML"
+					hx-confirm="Re-fetch metadata for all released issues? This may take a while."
+				>Update Metadata</button>
+				<button
+					class={ BtnSecondary }
+					hx-get={ "/series/" + vm.Config.SlugName + "/copy-preview" }
+					hx-target="#action-result"
+					hx-swap="innerHTML"
+				>Copy Preview</button>
+				<button
+					class={ BtnDanger }
+					hx-post={ "/series/" + vm.Config.SlugName + "/clear-cache" }
+					hx-target="#action-result"
+					hx-swap="innerHTML"
+					hx-confirm="Delete all cached metadata and cover images for this series?"
+				>Clear Cache</button>
+			</div>
+		</div>
+		<div id="action-result" class="mb-5"></div>
+		@SeriesCards(vm)
+	</div>
+}
+
+templ SeriesCards(vm SeriesVM) {
+	<div
+		id="series-cards"
+		hx-get={ "/series/" + vm.Config.SlugName + "/cards?view=" + vm.ViewMode }
+		hx-trigger="seriesRefresh from:body"
+		hx-swap="outerHTML"
+	>
+		switch vm.ViewMode {
+			case "big":
+				<div class="flex flex-wrap gap-[18px] items-start">
+					for _, issue := range vm.Issues {
+						if issue.States["Released"] {
+							@IssueCardBig(issue, vm.Config.SlugName)
+						}
+					}
+				</div>
+			case "medium":
+				<div class="flex flex-wrap gap-[18px] items-start">
+					for _, issue := range vm.Issues {
+						if issue.States["Released"] {
+							@IssueCardMedium(issue, vm.Config.SlugName)
+						}
+					}
+				</div>
+			default:
+				if len(vm.Issues) > 0 {
+					<div class="overflow-x-auto rounded-xl border border-white/[.07]">
+						<table class="w-full border-collapse text-[13px]">
+							<thead>
+								<tr>
+									<th class="bg-[#18182a] text-[#7878a8] text-left p-[9px_12px] text-[10px] font-bold uppercase tracking-[.08em] border-b border-white/[.07]">#</th>
+									<th class="bg-[#18182a] text-[#7878a8] text-left p-[9px_12px] text-[10px] font-bold uppercase tracking-[.08em] border-b border-white/[.07]">Title</th>
+									<th class="bg-[#18182a] text-[#7878a8] text-left p-[9px_12px] text-[10px] font-bold uppercase tracking-[.08em] border-b border-white/[.07]">Author</th>
+									<th class="bg-[#18182a] text-[#7878a8] text-left p-[9px_12px] text-[10px] font-bold uppercase tracking-[.08em] border-b border-white/[.07]">Date</th>
+									<th class="bg-[#18182a] text-[#7878a8] text-left p-[9px_12px] text-[10px] font-bold uppercase tracking-[.08em] border-b border-white/[.07]">SubSeries</th>
+									for _, state := range vm.Config.States {
+										<th class="bg-[#18182a] text-[#7878a8] text-left p-[9px_12px] text-[10px] font-bold uppercase tracking-[.08em] border-b border-white/[.07]">{ state }</th>
+									}
+									<th class="bg-[#18182a] text-[#7878a8] text-left p-[9px_12px] text-[10px] font-bold uppercase tracking-[.08em] border-b border-white/[.07]">Inbox</th>
+									<th class="bg-[#18182a] text-[#7878a8] text-left p-[9px_12px] text-[10px] font-bold uppercase tracking-[.08em] border-b border-white/[.07]">Output</th>
+								</tr>
+							</thead>
+							<tbody>
+								for _, issue := range vm.Issues {
+									if !issue.States["Released"] {
+										<tr class="group opacity-40">
+											@issueTableRow(issue, vm.Config.SlugName)
+										</tr>
+									} else {
+										<tr class="group">
+											@issueTableRow(issue, vm.Config.SlugName)
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				} else {
+					<div class="py-[60px] text-center text-[#7878a8]">
+						<p>No issues tracked yet. Run <strong>Scan Inbox</strong> or <strong>Update Released</strong> to populate.</p>
+					</div>
+				}
+		}
+	</div>
+}
+
+templ issueTableRow(issue IssueVM, slug string) {
+	<td class="p-[8px_12px] border-b border-white/[.07] align-middle font-bold text-[#7c6ef7] w-[50px] tabular-nums group-last:border-b-0 group-hover:bg-[#18182a]">{ fmt.Sprintf("%d", issue.Number) }</td>
+	<td class="p-[8px_12px] border-b border-white/[.07] align-middle max-w-[200px] group-last:border-b-0 group-hover:bg-[#18182a]">
+		if issue.Title != "" {
+			{ issue.Title }
+		} else {
+			<span class="text-[#7878a8]">—</span>
+		}
+	</td>
+	<td class="p-[8px_12px] border-b border-white/[.07] align-middle group-last:border-b-0 group-hover:bg-[#18182a]">
+		if issue.Author != "" {
+			{ issue.Author }
+		} else {
+			—
+		}
+	</td>
+	<td class="p-[8px_12px] border-b border-white/[.07] align-middle whitespace-nowrap text-[#7878a8] tabular-nums group-last:border-b-0 group-hover:bg-[#18182a]">
+		if issue.ReleaseDate != "" {
+			{ issue.ReleaseDate }
+		} else {
+			—
+		}
+	</td>
+	<td class="p-[8px_12px] border-b border-white/[.07] align-middle text-[#7878a8] group-last:border-b-0 group-hover:bg-[#18182a]">
+		if issue.SubSeries != "" {
+			{ issue.SubSeries }
+		} else {
+			—
+		}
+	</td>
+	for _, name := range issue.StateNames {
+		{{ val := issue.States[name] }}
+		{{ newVal := !val }}
+		<td class="p-[8px_12px] border-b border-white/[.07] align-middle text-center group-last:border-b-0 group-hover:bg-[#18182a]">
+			<input
+				type="checkbox"
+				class="cursor-pointer w-[15px] h-[15px] accent-[#7c6ef7]"
+				checked?={ val }
+				hx-post={ fmt.Sprintf("/series/%s/issue/%d/state", slug, issue.Number) }
+				hx-vals={ fmt.Sprintf(`{"state":%s,"value":"%v"}`, fmt.Sprintf("%q", name), newVal) }
+				hx-target={ "#sidebar-" + slug }
+				hx-swap="outerHTML"
+				title={ name }
+			/>
+		</td>
+	}
+	<td class="p-[8px_12px] border-b border-white/[.07] align-middle group-last:border-b-0 group-hover:bg-[#18182a]">
+		if issue.InboxAudio != "" {
+			<span class={ BadgeOk } title={ issue.InboxAudio }>audio</span>
+		}
+		if issue.InboxEbook != "" {
+			<span class={ BadgeOk } title={ issue.InboxEbook }>ebook</span>
+		}
+	</td>
+	@IssueOutputCell(slug, issue)
+}
+
+templ IssueOutputCell(slug string, issue IssueVM) {
+	<td class="p-[8px_12px] border-b border-white/[.07] align-middle group-last:border-b-0 group-hover:bg-[#18182a]" id={ fmt.Sprintf("output-%s-%d", slug, issue.Number) }>
+		if issue.HasAudio {
+			if issue.OutputAudio != "" {
+				<button
+					class={ BadgeDoneBtn }
+					hx-post={ fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number) }
+					hx-vals={ `{"mediaType":"audio","action":"clear"}` }
+					hx-target={ fmt.Sprintf("#output-%s-%d", slug, issue.Number) }
+					hx-swap="outerHTML"
+					title={ issue.OutputAudio + " — click to clear" }
+				>audio ×</button>
+			} else {
+				<button
+					class={ BadgePlainBtn }
+					hx-post={ fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number) }
+					hx-vals={ `{"mediaType":"audio","action":"set"}` }
+					hx-target={ fmt.Sprintf("#output-%s-%d", slug, issue.Number) }
+					hx-swap="outerHTML"
+					title="Mark audio as in output"
+				>audio ✓</button>
+			}
+		}
+		if issue.HasEbook {
+			if issue.OutputEbook != "" {
+				<button
+					class={ BadgeDoneBtn }
+					hx-post={ fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number) }
+					hx-vals={ `{"mediaType":"ebook","action":"clear"}` }
+					hx-target={ fmt.Sprintf("#output-%s-%d", slug, issue.Number) }
+					hx-swap="outerHTML"
+					title={ issue.OutputEbook + " — click to clear" }
+				>ebook ×</button>
+			} else {
+				<button
+					class={ BadgePlainBtn }
+					hx-post={ fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number) }
+					hx-vals={ `{"mediaType":"ebook","action":"set"}` }
+					hx-target={ fmt.Sprintf("#output-%s-%d", slug, issue.Number) }
+					hx-swap="outerHTML"
+					title="Mark ebook as in output"
+				>ebook ✓</button>
+			}
+		}
+	</td>
+}

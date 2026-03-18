@@ -2,27 +2,27 @@ package server
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
 	"sort"
 	"strconv"
 
+	"github.com/a-h/templ"
 	"github.com/hk28/prman/internal/config"
 	"github.com/hk28/prman/internal/processor"
+	"github.com/hk28/prman/internal/views"
 )
 
 type Server struct {
 	proc      *processor.Processor
-	tmpls     *template.Template
 	series    []config.SeriesConfig
 	main      config.MainConfig
 	configDir string
 }
 
-func New(proc *processor.Processor, series []config.SeriesConfig, main config.MainConfig, tmpls *template.Template, configDir string) *Server {
-	return &Server{proc: proc, tmpls: tmpls, series: series, main: main, configDir: configDir}
+func New(proc *processor.Processor, series []config.SeriesConfig, main config.MainConfig, configDir string) *Server {
+	return &Server{proc: proc, series: series, main: main, configDir: configDir}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -44,8 +44,8 @@ func (s *Server) Handler() http.Handler {
 	return mux
 }
 
-func (s *Server) buildPageVM(viewMode, filterSlug, filterType, sortOrder string, onlyMissing bool) PageVM {
-	var vms []SeriesVM
+func (s *Server) buildPageVM(viewMode, filterSlug, filterType, sortOrder string, onlyMissing bool) views.PageVM {
+	var vms []views.SeriesVM
 	for _, cfg := range s.series {
 		st, _ := s.proc.State.Load(cfg.SlugName)
 		vm := BuildSeriesVM(cfg, st, s.proc.Cache)
@@ -67,7 +67,7 @@ func (s *Server) buildPageVM(viewMode, filterSlug, filterType, sortOrder string,
 		totalAudio += vm.MissingReleasedAudio
 		totalEbook += vm.MissingReleasedEbook
 	}
-	return PageVM{
+	return views.PageVM{
 		Series:            vms,
 		ViewMode:          viewMode,
 		FilterSlug:        filterSlug,
@@ -76,6 +76,14 @@ func (s *Server) buildPageVM(viewMode, filterSlug, filterType, sortOrder string,
 		SortOrder:         sortOrder,
 		TotalMissingAudio: totalAudio,
 		TotalMissingEbook: totalEbook,
+	}
+}
+
+func render(w http.ResponseWriter, r *http.Request, c templ.Component) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := c.Render(r.Context(), w); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `<div style="color:red">render error: %v</div>`, err)
 	}
 }
 
@@ -109,10 +117,10 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	vm := s.buildPageVM(viewMode, filterSlug, filterType, sortOrder, onlyMissing)
 
 	if r.Header.Get("HX-Request") == "true" && r.Header.Get("HX-Target") == "main-content" {
-		s.renderPartial(w, "main_content", vm)
+		render(w, r, views.MainContent(vm))
 		return
 	}
-	s.renderPage(w, "index.html", vm)
+	render(w, r, views.IndexPage(vm))
 }
 
 func (s *Server) handleSeriesCards(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +137,7 @@ func (s *Server) handleSeriesCards(w http.ResponseWriter, r *http.Request) {
 	st, _ := s.proc.State.Load(slug)
 	svm := BuildSeriesVM(cfg, st, s.proc.Cache)
 	svm.ViewMode = viewMode
-	s.renderPartial(w, "series_cards", svm)
+	render(w, r, views.SeriesCards(svm))
 }
 
 func (s *Server) handleSeriesDetail(w http.ResponseWriter, r *http.Request) {
@@ -149,48 +157,33 @@ func (s *Server) handleSeriesDetail(w http.ResponseWriter, r *http.Request) {
 	sortOrder := r.URL.Query().Get("sort")
 	page := s.buildPageVM(viewMode, slug, "", sortOrder, false)
 	page.CurrentSeries = &svm
-	s.renderPage(w, "series_detail.html", page)
+	render(w, r, views.SeriesPage(page))
 }
 
 func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	report, err := s.proc.Scan(slug)
 	w.Header().Set("HX-Trigger", "seriesRefresh")
-	s.renderPartial(w, "scan_preview", map[string]any{
-		"Report": report,
-		"Error":  errStr(err),
-		"Slug":   slug,
-	})
+	render(w, r, views.ScanPreview(report, errStr(err)))
 }
 
 func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	report, err := s.proc.Update(slug)
 	w.Header().Set("HX-Trigger", "seriesRefresh")
-	s.renderPartial(w, "update_result", map[string]any{
-		"Report": report,
-		"Error":  errStr(err),
-		"Slug":   slug,
-	})
+	render(w, r, views.UpdateResult(report, errStr(err)))
 }
 
 func (s *Server) handleRefreshMetadata(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	report, err := s.proc.RefreshMetadata(slug)
-	s.renderPartial(w, "refresh_result", map[string]any{
-		"Report": report,
-		"Error":  errStr(err),
-		"Slug":   slug,
-	})
+	render(w, r, views.RefreshResult(report, errStr(err)))
 }
 
 func (s *Server) handleClearCache(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	err := s.proc.ClearCache(slug)
-	s.renderPartial(w, "clear_cache_result", map[string]any{
-		"Error": errStr(err),
-		"Slug":  slug,
-	})
+	render(w, r, views.ClearCacheResult(slug, errStr(err)))
 }
 
 func splitActions(all []processor.CopyAction) (pending, done []processor.CopyAction) {
@@ -208,12 +201,7 @@ func (s *Server) handleCopyPreview(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	actions, err := s.proc.CopyPreview(slug)
 	pending, done := splitActions(actions)
-	s.renderPartial(w, "copy_preview", map[string]any{
-		"Actions": pending,
-		"Done":    done,
-		"Error":   errStr(err),
-		"Slug":    slug,
-	})
+	render(w, r, views.CopyPreview(slug, pending, done, errStr(err)))
 }
 
 func (s *Server) handleCopy(w http.ResponseWriter, r *http.Request) {
@@ -227,11 +215,7 @@ func (s *Server) handleCopy(w http.ResponseWriter, r *http.Request) {
 	}
 	pending, _ := splitActions(actions)
 	w.Header().Set("HX-Trigger", "seriesRefresh")
-	s.renderPartial(w, "copy_result", map[string]any{
-		"Errors": errs,
-		"Count":  len(pending) - len(errs),
-		"Slug":   slug,
-	})
+	render(w, r, views.CopyResult(len(pending)-len(errs), errs))
 }
 
 func (s *Server) handleToggleState(w http.ResponseWriter, r *http.Request) {
@@ -262,7 +246,7 @@ func (s *Server) handleToggleState(w http.ResponseWriter, r *http.Request) {
 	}
 	st, _ := s.proc.State.Load(slug)
 	vm := BuildSeriesVM(cfg, st, s.proc.Cache)
-	s.renderPartial(w, "sidebar_series", vm)
+	render(w, r, views.SidebarSeries(vm))
 }
 
 func (s *Server) handleSetOutput(w http.ResponseWriter, r *http.Request) {
@@ -293,32 +277,14 @@ func (s *Server) handleSetOutput(w http.ResponseWriter, r *http.Request) {
 	}
 	st, _ := s.proc.State.Load(slug)
 	vm := BuildSeriesVM(cfg, st, s.proc.Cache)
-	var issueVM IssueVM
+	var issueVM views.IssueVM
 	for _, iv := range vm.Issues {
 		if iv.Number == num {
 			issueVM = iv
 			break
 		}
 	}
-	s.renderPartial(w, "issue_output_cell", map[string]any{
-		"Slug":  slug,
-		"Issue": issueVM,
-	})
-}
-
-func (s *Server) renderPage(w http.ResponseWriter, name string, data any) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := s.tmpls.ExecuteTemplate(w, name, data); err != nil {
-		http.Error(w, fmt.Sprintf("template error: %v", err), http.StatusInternalServerError)
-	}
-}
-
-func (s *Server) renderPartial(w http.ResponseWriter, name string, data any) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := s.tmpls.ExecuteTemplate(w, name, data); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `<div class="error">Template error: %v</div>`, err)
-	}
+	render(w, r, views.IssueOutputCell(slug, issueVM))
 }
 
 func errStr(err error) string {
