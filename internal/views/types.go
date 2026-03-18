@@ -29,6 +29,8 @@ type SeriesVM struct {
 	Issues               []IssueVM
 	CoverURL             string
 	LatestReleaseDate    string
+	NextReleaseDate      string // empty when unknown or series is complete
+	NextIssueNumber      int    // 0 when unknown
 	MissingAudio         int
 	MissingEbook         int
 	MissingReleasedAudio int

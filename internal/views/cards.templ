@@ -20,7 +20,8 @@ templ CardBig(vm SeriesVM) {
 					for _, name := range vm.Issues[0].StateNames {
 						{{ val := vm.Issues[0].States[name] }}
 						<span
-							class={ "text-[9px] font-bold px-[7px] py-0.5 rounded-full tracking-[.04em] backdrop-blur-sm border",
+							class={
+								"text-[9px] font-bold px-[7px] py-0.5 rounded-full tracking-[.04em] backdrop-blur-sm border",
 								templ.KV("bg-[rgba(52,211,153,.25)] text-[#6ee7b7] border-[rgba(52,211,153,.5)]", val),
 								templ.KV("bg-[rgba(0,0,0,.45)] text-[rgba(255,255,255,.28)] border-[rgba(255,255,255,.08)]", !val),
 							}
@@ -38,6 +39,22 @@ templ CardBig(vm SeriesVM) {
 					<span class={ TypeTagClass(t) }>{ t }</span>
 				}
 			</div>
+			if vm.Config.Complete {
+				<div class="text-[11px] mt-1.5 text-[#7878a8] italic">Series is complete</div>
+			} else if vm.NextReleaseDate != "" {
+				{{ days, ok := DaysUntil(vm.NextReleaseDate) }}
+				if ok {
+					<div class="text-[11px] mt-1.5">
+						if days > 0 {
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d releases in %d days", vm.NextIssueNumber, days) }</span>
+						} else if days == 0 {
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d releases today", vm.NextIssueNumber) }</span>
+						} else {
+							<span class="text-[#7878a8]">{ fmt.Sprintf("released %d days ago", -days) }</span>
+						}
+					</div>
+				}
+			}
 			if vm.MissingAudio > 0 || vm.MissingEbook > 0 {
 				<div class="mt-1.5 flex gap-1 flex-wrap">
 					if vm.MissingAudio > 0 {
@@ -83,6 +100,22 @@ templ CardMedium(vm SeriesVM) {
 					}
 				</div>
 			}
+			if vm.Config.Complete {
+				<div class="text-[11px] mt-1 text-[#7878a8] italic">Series is complete</div>
+			} else if vm.NextReleaseDate != "" {
+				{{ days, ok := DaysUntil(vm.NextReleaseDate) }}
+				if ok {
+					<div class="text-[11px] mt-1">
+						if days > 0 {
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d in %d days", vm.NextIssueNumber, days) }</span>
+						} else if days == 0 {
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d releases today", vm.NextIssueNumber) }</span>
+						} else {
+							<span class="text-[#7878a8]">{ fmt.Sprintf("released %d days ago", -days) }</span>
+						}
+					</div>
+				}
+			}
 			<div class="flex gap-1.5 flex-wrap mt-2">
 				for _, name := range vm.Config.States {
 					<span class={ StatePillClass(false) }>{ name }</span>
@@ -105,7 +138,8 @@ templ CardMedium(vm SeriesVM) {
 // IssueCardBig renders a single-issue card (large format).
 templ IssueCardBig(issue IssueVM, slug string) {
 	<div
-		class={ "bg-surface border border-white/[.07] rounded-xl overflow-hidden transition-all duration-[.25s] shadow-[0_2px_16px_rgba(0,0,0,.4)] hover:shadow-[0_8px_32px_rgba(124,110,247,.25),0_2px_8px_rgba(0,0,0,.5)] hover:-translate-y-[3px] hover:border-[rgba(124,110,247,.3)] w-[270px]",
+		class={
+			"bg-surface border border-white/[.07] rounded-xl overflow-hidden transition-all duration-[.25s] shadow-[0_2px_16px_rgba(0,0,0,.4)] hover:shadow-[0_8px_32px_rgba(124,110,247,.25),0_2px_8px_rgba(0,0,0,.5)] hover:-translate-y-[3px] hover:border-[rgba(124,110,247,.3)] w-[270px]",
 			templ.KV("opacity-55", !issue.States["Released"]),
 		}
 	>
@@ -128,7 +162,8 @@ templ IssueCardBig(issue IssueVM, slug string) {
 				for _, name := range issue.StateNames {
 					{{ val := issue.States[name] }}
 					<span
-						class={ "text-[9px] font-bold px-[7px] py-0.5 rounded-full tracking-[.04em] backdrop-blur-sm border",
+						class={
+							"text-[9px] font-bold px-[7px] py-0.5 rounded-full tracking-[.04em] backdrop-blur-sm border",
 							templ.KV("bg-[rgba(52,211,153,.25)] text-[#6ee7b7] border-[rgba(52,211,153,.5)]", val),
 							templ.KV("bg-[rgba(0,0,0,.45)] text-[rgba(255,255,255,.28)] border-[rgba(255,255,255,.08)]", !val),
 						}
@@ -167,7 +202,8 @@ templ IssueCardBig(issue IssueVM, slug string) {
 // IssueCardMedium renders a single-issue card (medium format).
 templ IssueCardMedium(issue IssueVM, slug string) {
 	<div
-		class={ "bg-surface border border-white/[.07] rounded-xl overflow-hidden transition-all duration-[.25s] shadow-[0_2px_16px_rgba(0,0,0,.4)] hover:shadow-[0_8px_32px_rgba(124,110,247,.25),0_2px_8px_rgba(0,0,0,.5)] hover:-translate-y-[3px] hover:border-[rgba(124,110,247,.3)] flex w-[460px] max-w-full",
+		class={
+			"bg-surface border border-white/[.07] rounded-xl overflow-hidden transition-all duration-[.25s] shadow-[0_2px_16px_rgba(0,0,0,.4)] hover:shadow-[0_8px_32px_rgba(124,110,247,.25),0_2px_8px_rgba(0,0,0,.5)] hover:-translate-y-[3px] hover:border-[rgba(124,110,247,.3)] flex w-[460px] max-w-full",
 			templ.KV("opacity-55", !issue.States["Released"]),
 		}
 	>

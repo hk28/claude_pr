@@ -1,5 +1,18 @@
 package views
 
+import "time"
+
+// DaysUntil returns the number of days from today to a "2006-01-02" date string.
+// Negative means the date is in the past.
+func DaysUntil(dateStr string) (int, bool) {
+	d, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return 0, false
+	}
+	now := time.Now().Truncate(24 * time.Hour)
+	return int(d.Truncate(24 * time.Hour).Sub(now).Hours() / 24), true
+}
+
 // Button Tailwind class constants.
 const (
 	btnBase      = "px-4 py-[7px] rounded-[7px] border-0 text-[13px] font-semibold cursor-pointer inline-flex items-center gap-1.5 tracking-[.01em] transition-[background,box-shadow] duration-150 active:scale-[.98] disabled:opacity-45 disabled:cursor-not-allowed"
