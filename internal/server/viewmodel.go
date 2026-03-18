@@ -26,6 +26,8 @@ type IssueVM struct {
 	OutputAudio string
 	OutputEbook string
 	CacheExists bool
+	HasAudio    bool
+	HasEbook    bool
 }
 
 // IssueCardVM wraps an IssueVM with series context needed by issue card templates.
@@ -96,6 +98,8 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 			InboxEbook:  is.InboxEbook,
 			OutputAudio: is.OutputAudio,
 			OutputEbook: is.OutputEbook,
+			HasAudio:    hasAudio,
+			HasEbook:    hasEbook,
 		}
 		if issue, ok := c.Get(cfg.SlugName, num); ok {
 			iv.Title = issue.Title

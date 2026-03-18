@@ -133,19 +133,35 @@
 {{define "issue_output_cell"}}
 {{$slug := .Slug}}{{$n := .Issue.Number}}
 <td class="col-output" id="output-{{$slug}}-{{$n}}">
-  {{if .Issue.OutputAudio}}
-  <button class="badge badge-done badge-btn badge-clearable"
-    hx-post="/series/{{$slug}}/issue/{{$n}}/set-output"
-    hx-vals='{"mediaType":"audio","action":"clear"}'
-    hx-target="#output-{{$slug}}-{{$n}}" hx-swap="outerHTML"
-    title="{{.Issue.OutputAudio}} — click to clear">audio ×</button>
+  {{if .Issue.HasAudio}}
+    {{if .Issue.OutputAudio}}
+    <button class="badge badge-done badge-btn badge-clearable"
+      hx-post="/series/{{$slug}}/issue/{{$n}}/set-output"
+      hx-vals='{"mediaType":"audio","action":"clear"}'
+      hx-target="#output-{{$slug}}-{{$n}}" hx-swap="outerHTML"
+      title="{{.Issue.OutputAudio}} — click to clear">audio ×</button>
+    {{else}}
+    <button class="badge badge-btn"
+      hx-post="/series/{{$slug}}/issue/{{$n}}/set-output"
+      hx-vals='{"mediaType":"audio","action":"set"}'
+      hx-target="#output-{{$slug}}-{{$n}}" hx-swap="outerHTML"
+      title="Mark audio as in output">audio ✓</button>
+    {{end}}
   {{end}}
-  {{if .Issue.OutputEbook}}
-  <button class="badge badge-done badge-btn badge-clearable"
-    hx-post="/series/{{$slug}}/issue/{{$n}}/set-output"
-    hx-vals='{"mediaType":"ebook","action":"clear"}'
-    hx-target="#output-{{$slug}}-{{$n}}" hx-swap="outerHTML"
-    title="{{.Issue.OutputEbook}} — click to clear">ebook ×</button>
+  {{if .Issue.HasEbook}}
+    {{if .Issue.OutputEbook}}
+    <button class="badge badge-done badge-btn badge-clearable"
+      hx-post="/series/{{$slug}}/issue/{{$n}}/set-output"
+      hx-vals='{"mediaType":"ebook","action":"clear"}'
+      hx-target="#output-{{$slug}}-{{$n}}" hx-swap="outerHTML"
+      title="{{.Issue.OutputEbook}} — click to clear">ebook ×</button>
+    {{else}}
+    <button class="badge badge-btn"
+      hx-post="/series/{{$slug}}/issue/{{$n}}/set-output"
+      hx-vals='{"mediaType":"ebook","action":"set"}'
+      hx-target="#output-{{$slug}}-{{$n}}" hx-swap="outerHTML"
+      title="Mark ebook as in output">ebook ✓</button>
+    {{end}}
   {{end}}
 </td>
 {{end}}
