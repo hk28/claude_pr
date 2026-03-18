@@ -24,6 +24,9 @@ func main() {
 	addr := flag.String("addr", ":8080", "listen address")
 	flag.Parse()
 
+	if err := os.MkdirAll(*dataDir, 0755); err != nil {
+		log.Fatalf("creating data dir: %v", err)
+	}
 	logFile, err := os.OpenFile(filepath.Join(*dataDir, "log.txt"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatalf("opening log file: %v", err)
