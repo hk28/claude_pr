@@ -9,7 +9,6 @@ FROM alpine:latest
 RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=builder /build/prman .
-COPY templates/ templates/
 COPY static/ static/
 
 EXPOSE 8080
