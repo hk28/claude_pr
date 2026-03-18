@@ -93,11 +93,15 @@ services:
     restart: unless-stopped
 ```
 
-### Build only
+### Update to latest version
 
 ```bash
-docker build -t prman .
+docker compose down
+cd claude_pr && git pull && cd ..
+docker compose up -d --build --no-cache
 ```
+
+> **Note:** Do not use `docker build -t prman .` followed by `docker compose up -d` — Compose ignores manually tagged images unless `image: prman` is set in the compose file. Use `--build` to let Compose rebuild from the updated source.
 
 ### Run without compose
 
