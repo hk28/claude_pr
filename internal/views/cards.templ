@@ -46,9 +46,9 @@ templ CardBig(vm SeriesVM) {
 				if ok {
 					<div class="text-[11px] mt-1.5">
 						if days > 0 {
-							<span class="text-[#34d399]">{ fmt.Sprintf("#%d releases in %d days", vm.NextIssueNumber, days) }</span>
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d is released in %d days", vm.NextIssueNumber, days) }</span>
 						} else if days == 0 {
-							<span class="text-[#34d399]">{ fmt.Sprintf("#%d releases today", vm.NextIssueNumber) }</span>
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d is released today", vm.NextIssueNumber) }</span>
 						} else {
 							<span class="text-[#7878a8]">{ fmt.Sprintf("released %d days ago", -days) }</span>
 						}
@@ -107,9 +107,9 @@ templ CardMedium(vm SeriesVM) {
 				if ok {
 					<div class="text-[11px] mt-1">
 						if days > 0 {
-							<span class="text-[#34d399]">{ fmt.Sprintf("#%d in %d days", vm.NextIssueNumber, days) }</span>
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d is released in %d days", vm.NextIssueNumber, days) }</span>
 						} else if days == 0 {
-							<span class="text-[#34d399]">{ fmt.Sprintf("#%d releases today", vm.NextIssueNumber) }</span>
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d is released today", vm.NextIssueNumber) }</span>
 						} else {
 							<span class="text-[#7878a8]">{ fmt.Sprintf("released %d days ago", -days) }</span>
 						}
