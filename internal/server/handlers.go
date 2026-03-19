@@ -264,11 +264,14 @@ func (s *Server) handleSetOutput(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mediaType := r.FormValue("mediaType")
+	action := r.FormValue("action")
 	path := ""
-	if r.FormValue("action") == "set" {
+	if action == "set" {
 		path = "manual"
 	}
+	log.Printf("set-output: slug=%s issue=#%d mediaType=%s action=%s → path=%q", slug, num, mediaType, action, path)
 	if err := s.proc.State.UpdateOutput(slug, num, mediaType, path); err != nil {
+		log.Printf("set-output: UpdateOutput failed: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -277,14 +280,25 @@ func (s *Server) handleSetOutput(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "series not found", http.StatusNotFound)
 		return
 	}
-	st, _ := s.proc.State.Load(slug)
+	st, err := s.proc.State.Load(slug)
+	if err != nil {
+		log.Printf("set-output: state reload failed: %v", err)
+	}
 	vm := BuildSeriesVM(cfg, st, s.proc.Cache)
 	var issueVM views.IssueVM
+	found := false
 	for _, iv := range vm.Issues {
 		if iv.Number == num {
 			issueVM = iv
+			found = true
 			break
 		}
+	}
+	if !found {
+		log.Printf("set-output: issue #%d not found in rebuilt VM (total issues: %d)", num, len(vm.Issues))
+	} else {
+		log.Printf("set-output: issue #%d after save — OutputAudio=%q OutputEbook=%q HasAudio=%v HasEbook=%v",
+			num, issueVM.OutputAudio, issueVM.OutputEbook, issueVM.HasAudio, issueVM.HasEbook)
 	}
 	render(w, r, views.IssueOutputCell(slug, issueVM))
 }

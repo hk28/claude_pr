@@ -444,20 +444,38 @@ func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []strin
 				errs = append(errs, fmt.Sprintf("#%d: mkdir: %v", a.Number, err))
 				continue
 			}
-			if _, err := moveEpub(a.SrcPath, dst); err != nil {
+			epubDst, err := moveEpub(a.SrcPath, dst)
+			if err != nil {
 				errs = append(errs, fmt.Sprintf("#%d: move epub: %v", a.Number, err))
 				continue
 			}
+			log.Printf("copy ebook #%d: epub %s → %s", a.Number, a.SrcPath, epubDst)
 			issue, hasCached := p.Cache.Get(seriesSlug, a.Number)
 			if hasCached {
+				opfPath := filepath.Join(dst, fmt.Sprintf("%d.opf", a.Number))
 				opf, err := metadata.GenerateOPF(cfg, issue, a.Number)
 				if err == nil {
-					_ = os.WriteFile(filepath.Join(dst, fmt.Sprintf("%d.opf", a.Number)), []byte(opf), 0644)
+					if err := os.WriteFile(opfPath, []byte(opf), 0644); err == nil {
+						log.Printf("copy ebook #%d: wrote %s", a.Number, opfPath)
+					} else {
+						log.Printf("copy ebook #%d: write opf failed: %v", a.Number, err)
+					}
+				} else {
+					log.Printf("copy ebook #%d: generate opf failed: %v", a.Number, err)
 				}
 				if strings.HasPrefix(issue.CoverURL, "/covers/") {
 					localCover := filepath.Join(p.Cache.CoversDir, strings.TrimPrefix(issue.CoverURL, "/covers/"))
-					_ = copyFile(localCover, filepath.Join(dst, "cover.jpg"))
+					coverDst := filepath.Join(dst, "cover.jpg")
+					if err := copyFile(localCover, coverDst); err == nil {
+						log.Printf("copy ebook #%d: cover %s → %s", a.Number, localCover, coverDst)
+					} else {
+						log.Printf("copy ebook #%d: cover copy failed (%s → %s): %v", a.Number, localCover, coverDst, err)
+					}
+				} else {
+					log.Printf("copy ebook #%d: no local cover (CoverURL=%q), skipping cover.jpg", a.Number, issue.CoverURL)
 				}
+			} else {
+				log.Printf("copy ebook #%d: no cache entry, skipping opf and cover", a.Number)
 			}
 
 		case "audio":
@@ -465,10 +483,12 @@ func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []strin
 				errs = append(errs, fmt.Sprintf("#%d: mkdir: %v", a.Number, err))
 				continue
 			}
+			log.Printf("copy audio #%d: %s → %s", a.Number, a.SrcPath, dst)
 			if err := moveDir(a.SrcPath, dst); err != nil {
 				errs = append(errs, fmt.Sprintf("#%d: move audio: %v", a.Number, err))
 				continue
 			}
+			log.Printf("copy audio #%d: done", a.Number)
 			issue, hasCached := p.Cache.Get(seriesSlug, a.Number)
 			if hasCached {
 				m, err := metadata.GenerateAudio(cfg, issue)
