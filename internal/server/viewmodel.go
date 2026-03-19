@@ -33,7 +33,6 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 	}
 	sort.Ints(sorted)
 
-	maxReleased := 0
 	for _, num := range sorted {
 		is := st.Issues[fmt.Sprintf("%d", num)]
 		if is == nil {
@@ -70,9 +69,6 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 		released := is.States["Released"]
 		if released {
 			vm.TotalReleased++
-			if num > maxReleased {
-				maxReleased = num
-			}
 			if hasAudio && is.InboxAudio == "" && is.OutputAudio == "" {
 				vm.MissingReleasedAudio++
 			}
@@ -89,15 +85,14 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 		vm.Issues = append(vm.Issues, iv)
 	}
 	if !cfg.Complete && cfg.Interval > 0 && cfg.Anchor.Date != "" {
-		latest := cfg.Latest
-		if latest == 0 {
-			latest = maxReleased
-		}
-		if latest > 0 {
-			if anchor, err := time.Parse("2006-01-02", cfg.Anchor.Date); err == nil {
-				days := (latest + 1 - cfg.Anchor.Number) * cfg.Interval
-				vm.NextReleaseDate = anchor.AddDate(0, 0, days).Format("2006-01-02")
-				vm.NextIssueNumber = latest + 1
+		if anchor, err := time.Parse("2006-01-02", cfg.Anchor.Date); err == nil {
+			today := time.Now().Truncate(24 * time.Hour)
+			daysSince := int(today.Sub(anchor.Truncate(24 * time.Hour)).Hours() / 24)
+			if daysSince >= 0 {
+				latestByDate := cfg.Anchor.Number + daysSince/cfg.Interval
+				next := latestByDate + 1
+				vm.NextIssueNumber = next
+				vm.NextReleaseDate = anchor.AddDate(0, 0, (next-cfg.Anchor.Number)*cfg.Interval).Format("2006-01-02")
 			}
 		}
 	}
