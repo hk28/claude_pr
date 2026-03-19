@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/hk28/prman/internal/config"
@@ -41,7 +42,17 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("GET /covers/", http.StripPrefix("/covers/", http.FileServer(http.Dir(s.proc.Cache.CoversDir))))
 	mux.HandleFunc("POST /series/{slug}/clear-cache", s.handleClearCache)
 	mux.HandleFunc("POST /reload-config", s.handleReloadConfig)
-	return mux
+	return requestLogger(mux)
+}
+
+// requestLogger logs every non-static request so we can see what the server receives.
+func requestLogger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasPrefix(r.URL.Path, "/static/") && !strings.HasPrefix(r.URL.Path, "/covers/") {
+			log.Printf("→ %s %s", r.Method, r.URL.RequestURI())
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) buildPageVM(viewMode, filterSlug, filterType, sortOrder string, onlyMissing bool) views.PageVM {
