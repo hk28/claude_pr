@@ -89,8 +89,11 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 			today := time.Now().Truncate(24 * time.Hour)
 			daysSince := int(today.Sub(anchor.Truncate(24 * time.Hour)).Hours() / 24)
 			if daysSince >= 0 {
-				latestByDate := cfg.Anchor.Number + daysSince/cfg.Interval
-				next := latestByDate + 1
+				// next = smallest issue N whose release date >= today
+				next := cfg.Anchor.Number + daysSince/cfg.Interval
+				if daysSince%cfg.Interval != 0 {
+					next++
+				}
 				vm.NextIssueNumber = next
 				vm.NextReleaseDate = anchor.AddDate(0, 0, (next-cfg.Anchor.Number)*cfg.Interval).Format("2006-01-02")
 			}
