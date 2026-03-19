@@ -19,9 +19,9 @@ values:
     alias: 'Zyklus:'
 locations:
   - what: audio
-    scanpattern: "pr %.04d"
+    scanpattern: "pr"
   - what: ebook
-    scanpattern: "pr %.04d"
+    scanpattern: "pr"
 interval: 7
 anchor:
   number: 3120

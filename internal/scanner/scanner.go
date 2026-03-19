@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -53,6 +54,7 @@ func ScanInbox(cfg config.SeriesConfig, mainCfg config.MainConfig) ([]ScanResult
 				stem = strings.TrimSuffix(stem, filepath.Ext(stem))
 			}
 			name := strings.ToLower(stem)
+			log.Printf("Scanning %s for series %s: checking name %q against pattern %q", inboxBase, cfg.Name, name, loc.ScanPattern)
 			m := re.FindStringSubmatch(name)
 			if m == nil {
 				continue

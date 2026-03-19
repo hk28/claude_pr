@@ -454,6 +454,10 @@ func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []strin
 				if err == nil {
 					_ = os.WriteFile(filepath.Join(dst, fmt.Sprintf("%d.opf", a.Number)), []byte(opf), 0644)
 				}
+				if strings.HasPrefix(issue.CoverURL, "/covers/") {
+					localCover := filepath.Join(p.Cache.CoversDir, strings.TrimPrefix(issue.CoverURL, "/covers/"))
+					_ = copyFile(localCover, filepath.Join(dst, "cover.jpg"))
+				}
 			}
 
 		case "audio":
