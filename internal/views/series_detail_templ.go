@@ -426,7 +426,7 @@ func SeriesCards(vm SeriesVM) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, issue := range vm.Issues {
-				if issue.States["Released"] {
+				if issue.States["Released"] && (!vm.OnlyMissing || IssueMissingForType(issue, vm.FilterType)) {
 					templ_7745c5c3_Err = IssueCardBig(issue, vm.Config.SlugName).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
@@ -443,7 +443,7 @@ func SeriesCards(vm SeriesVM) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, issue := range vm.Issues {
-				if issue.States["Released"] {
+				if issue.States["Released"] && (!vm.OnlyMissing || IssueMissingForType(issue, vm.FilterType)) {
 					templ_7745c5c3_Err = IssueCardMedium(issue, vm.Config.SlugName).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
@@ -484,31 +484,33 @@ func SeriesCards(vm SeriesVM) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				for _, issue := range vm.Issues {
-					if !issue.States["Released"] {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<tr class=\"group opacity-40\">")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						templ_7745c5c3_Err = issueTableRow(issue, vm.Config.SlugName).Render(ctx, templ_7745c5c3_Buffer)
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</tr>")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-					} else {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<tr class=\"group\">")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						templ_7745c5c3_Err = issueTableRow(issue, vm.Config.SlugName).Render(ctx, templ_7745c5c3_Buffer)
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</tr>")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
+					if !vm.OnlyMissing || (issue.States["Released"] && IssueMissingForType(issue, vm.FilterType)) {
+						if !issue.States["Released"] {
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<tr class=\"group opacity-40\">")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							templ_7745c5c3_Err = issueTableRow(issue, vm.Config.SlugName).Render(ctx, templ_7745c5c3_Buffer)
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</tr>")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+						} else {
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<tr class=\"group\">")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							templ_7745c5c3_Err = issueTableRow(issue, vm.Config.SlugName).Render(ctx, templ_7745c5c3_Buffer)
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</tr>")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
 						}
 					}
 				}
@@ -559,7 +561,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 		var templ_7745c5c3_Var34 string
 		templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", issue.Number))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 130, Col: 194}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 132, Col: 194}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 		if templ_7745c5c3_Err != nil {
@@ -573,7 +575,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var35 string
 			templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 133, Col: 16}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 135, Col: 16}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 			if templ_7745c5c3_Err != nil {
@@ -593,7 +595,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var36 string
 			templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Author)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 140, Col: 17}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 142, Col: 17}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 			if templ_7745c5c3_Err != nil {
@@ -613,7 +615,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var37 string
 			templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ReleaseDate)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 147, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 149, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 			if templ_7745c5c3_Err != nil {
@@ -633,7 +635,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var38 string
 			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(issue.SubSeries)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 154, Col: 20}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 156, Col: 20}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 			if templ_7745c5c3_Err != nil {
@@ -669,7 +671,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var39 string
 			templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/series/%s/issue/%d/state", slug, issue.Number))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 167, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 169, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 			if templ_7745c5c3_Err != nil {
@@ -682,7 +684,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var40 string
 			templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"state":%s,"value":"%v"}`, fmt.Sprintf("%q", name), newVal))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 168, Col: 87}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 170, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 			if templ_7745c5c3_Err != nil {
@@ -695,7 +697,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var41 string
 			templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs("#sidebar-" + slug)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 169, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 171, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 			if templ_7745c5c3_Err != nil {
@@ -708,7 +710,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var42 string
 			templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 171, Col: 16}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 173, Col: 16}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 			if templ_7745c5c3_Err != nil {
@@ -749,7 +751,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var45 string
 			templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(issue.InboxAudio)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 177, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 179, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 			if templ_7745c5c3_Err != nil {
@@ -786,7 +788,7 @@ func issueTableRow(issue IssueVM, slug string) templ.Component {
 			var templ_7745c5c3_Var48 string
 			templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(issue.InboxEbook)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 180, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 182, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 			if templ_7745c5c3_Err != nil {
@@ -837,7 +839,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 		var templ_7745c5c3_Var50 string
 		templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("output-%s-%d", slug, issue.Number))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 187, Col: 166}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 189, Col: 166}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 		if templ_7745c5c3_Err != nil {
@@ -874,7 +876,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var53 string
 				templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 192, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 194, Col: 80}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var53))
 				if templ_7745c5c3_Err != nil {
@@ -887,7 +889,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var54 string
 				templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(`{"mediaType":"audio","action":"clear"}`)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 193, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 195, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 				if templ_7745c5c3_Err != nil {
@@ -900,7 +902,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var55 string
 				templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("#output-%s-%d", slug, issue.Number))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 194, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 196, Col: 65}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 				if templ_7745c5c3_Err != nil {
@@ -913,7 +915,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var56 string
 				templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(issue.OutputAudio + " — click to clear")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 196, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 198, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var56))
 				if templ_7745c5c3_Err != nil {
@@ -949,7 +951,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var59 string
 				templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 201, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 203, Col: 80}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var59))
 				if templ_7745c5c3_Err != nil {
@@ -962,7 +964,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var60 string
 				templ_7745c5c3_Var60, templ_7745c5c3_Err = templ.JoinStringErrs(`{"mediaType":"audio","action":"set"}`)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 202, Col: 53}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 204, Col: 53}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var60))
 				if templ_7745c5c3_Err != nil {
@@ -975,7 +977,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var61 string
 				templ_7745c5c3_Var61, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("#output-%s-%d", slug, issue.Number))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 203, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 205, Col: 65}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var61))
 				if templ_7745c5c3_Err != nil {
@@ -1014,7 +1016,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var64 string
 				templ_7745c5c3_Var64, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 213, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 215, Col: 80}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var64))
 				if templ_7745c5c3_Err != nil {
@@ -1027,7 +1029,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var65 string
 				templ_7745c5c3_Var65, templ_7745c5c3_Err = templ.JoinStringErrs(`{"mediaType":"ebook","action":"clear"}`)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 214, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 216, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var65))
 				if templ_7745c5c3_Err != nil {
@@ -1040,7 +1042,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var66 string
 				templ_7745c5c3_Var66, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("#output-%s-%d", slug, issue.Number))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 215, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 217, Col: 65}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var66))
 				if templ_7745c5c3_Err != nil {
@@ -1053,7 +1055,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var67 string
 				templ_7745c5c3_Var67, templ_7745c5c3_Err = templ.JoinStringErrs(issue.OutputEbook + " — click to clear")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 217, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 219, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var67))
 				if templ_7745c5c3_Err != nil {
@@ -1089,7 +1091,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var70 string
 				templ_7745c5c3_Var70, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 222, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 224, Col: 80}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var70))
 				if templ_7745c5c3_Err != nil {
@@ -1102,7 +1104,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var71 string
 				templ_7745c5c3_Var71, templ_7745c5c3_Err = templ.JoinStringErrs(`{"mediaType":"ebook","action":"set"}`)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 223, Col: 53}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 225, Col: 53}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var71))
 				if templ_7745c5c3_Err != nil {
@@ -1115,7 +1117,7 @@ func IssueOutputCell(slug string, issue IssueVM) templ.Component {
 				var templ_7745c5c3_Var72 string
 				templ_7745c5c3_Var72, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("#output-%s-%d", slug, issue.Number))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 224, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 226, Col: 65}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var72))
 				if templ_7745c5c3_Err != nil {

@@ -11,26 +11,22 @@ templ MainContent(vm PageVM) {
 		case "big":
 			<div class="flex flex-wrap gap-[18px] items-start">
 				for _, s := range vm.Series {
-					if vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName {
-						if !vm.OnlyMissing || s.MissingAudio > 0 || s.MissingEbook > 0 {
-							@CardBig(s)
-						}
+					if (vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName) && (vm.FilterType == "" || HasType(s.Config.Types, vm.FilterType)) {
+						@CardBig(s)
 					}
 				}
 			</div>
 		case "medium":
 			<div class="flex flex-wrap gap-[18px] items-start">
 				for _, s := range vm.Series {
-					if vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName {
-						if !vm.OnlyMissing || s.MissingAudio > 0 || s.MissingEbook > 0 {
-							@CardMedium(s)
-						}
+					if (vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName) && (vm.FilterType == "" || HasType(s.Config.Types, vm.FilterType)) {
+						@CardMedium(s)
 					}
 				}
 			</div>
 		default:
 			for _, s := range vm.Series {
-				if vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName {
+				if (vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName) && (vm.FilterType == "" || HasType(s.Config.Types, vm.FilterType)) {
 					@SeriesDetail(s)
 				}
 			}

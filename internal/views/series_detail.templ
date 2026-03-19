@@ -71,7 +71,7 @@ templ SeriesCards(vm SeriesVM) {
 			case "big":
 				<div class="flex flex-wrap gap-[18px] items-start">
 					for _, issue := range vm.Issues {
-						if issue.States["Released"] {
+						if issue.States["Released"] && (!vm.OnlyMissing || IssueMissingForType(issue, vm.FilterType)) {
 							@IssueCardBig(issue, vm.Config.SlugName)
 						}
 					}
@@ -79,7 +79,7 @@ templ SeriesCards(vm SeriesVM) {
 			case "medium":
 				<div class="flex flex-wrap gap-[18px] items-start">
 					for _, issue := range vm.Issues {
-						if issue.States["Released"] {
+						if issue.States["Released"] && (!vm.OnlyMissing || IssueMissingForType(issue, vm.FilterType)) {
 							@IssueCardMedium(issue, vm.Config.SlugName)
 						}
 					}
@@ -104,14 +104,16 @@ templ SeriesCards(vm SeriesVM) {
 							</thead>
 							<tbody>
 								for _, issue := range vm.Issues {
-									if !issue.States["Released"] {
-										<tr class="group opacity-40">
-											@issueTableRow(issue, vm.Config.SlugName)
-										</tr>
-									} else {
-										<tr class="group">
-											@issueTableRow(issue, vm.Config.SlugName)
-										</tr>
+									if !vm.OnlyMissing || (issue.States["Released"] && IssueMissingForType(issue, vm.FilterType)) {
+										if !issue.States["Released"] {
+											<tr class="group opacity-40">
+												@issueTableRow(issue, vm.Config.SlugName)
+											</tr>
+										} else {
+											<tr class="group">
+												@issueTableRow(issue, vm.Config.SlugName)
+											</tr>
+										}
 									}
 								}
 							</tbody>

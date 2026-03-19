@@ -83,12 +83,10 @@ func MainContent(vm PageVM) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, s := range vm.Series {
-				if vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName {
-					if !vm.OnlyMissing || s.MissingAudio > 0 || s.MissingEbook > 0 {
-						templ_7745c5c3_Err = CardBig(s).Render(ctx, templ_7745c5c3_Buffer)
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
+				if (vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName) && (vm.FilterType == "" || HasType(s.Config.Types, vm.FilterType)) {
+					templ_7745c5c3_Err = CardBig(s).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
 					}
 				}
 			}
@@ -102,12 +100,10 @@ func MainContent(vm PageVM) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, s := range vm.Series {
-				if vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName {
-					if !vm.OnlyMissing || s.MissingAudio > 0 || s.MissingEbook > 0 {
-						templ_7745c5c3_Err = CardMedium(s).Render(ctx, templ_7745c5c3_Buffer)
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
+				if (vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName) && (vm.FilterType == "" || HasType(s.Config.Types, vm.FilterType)) {
+					templ_7745c5c3_Err = CardMedium(s).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
 					}
 				}
 			}
@@ -117,7 +113,7 @@ func MainContent(vm PageVM) templ.Component {
 			}
 		default:
 			for _, s := range vm.Series {
-				if vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName {
+				if (vm.FilterSlug == "" || vm.FilterSlug == s.Config.SlugName) && (vm.FilterType == "" || HasType(s.Config.Types, vm.FilterType)) {
 					templ_7745c5c3_Err = SeriesDetail(s).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err

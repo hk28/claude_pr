@@ -55,6 +55,51 @@ func TypeTagClass(t string) string {
 	}
 }
 
+// HasType reports whether types contains t.
+func HasType(types []string, t string) bool {
+	for _, v := range types {
+		if v == t {
+			return true
+		}
+	}
+	return false
+}
+
+// IssueMissingForType reports whether a released issue is missing output for the given type.
+// "Missing" means the series has that media type but no output file exists yet.
+func IssueMissingForType(issue IssueVM, filterType string) bool {
+	switch filterType {
+	case "audio":
+		return issue.HasAudio && issue.OutputAudio == ""
+	case "ebook":
+		return issue.HasEbook && issue.OutputEbook == ""
+	default:
+		return (issue.HasAudio && issue.OutputAudio == "") ||
+			(issue.HasEbook && issue.OutputEbook == "")
+	}
+}
+
+// HasMissingForType reports whether a series has missing files for the given type filter.
+// An empty filterType checks both audio and ebook.
+func HasMissingForType(s SeriesVM, filterType string) bool {
+	switch filterType {
+	case "audio":
+		return s.MissingAudio > 0
+	case "ebook":
+		return s.MissingEbook > 0
+	default:
+		return s.MissingAudio > 0 || s.MissingEbook > 0
+	}
+}
+
+// MissingParam returns "&missing=1" when onlyMissing is true, else "".
+func MissingParam(onlyMissing bool) string {
+	if onlyMissing {
+		return "&missing=1"
+	}
+	return ""
+}
+
 // StatePillClass returns the class for a state pill.
 func StatePillClass(active bool) string {
 	base := "text-[9px] font-bold px-2 py-0.5 rounded-full border tracking-[.04em] transition-colors"

@@ -50,6 +50,8 @@ func (s *Server) buildPageVM(viewMode, filterSlug, filterType, sortOrder string,
 		st, _ := s.proc.State.Load(cfg.SlugName)
 		vm := BuildSeriesVM(cfg, st, s.proc.Cache)
 		vm.ViewMode = viewMode
+		vm.OnlyMissing = onlyMissing
+		vm.FilterType = filterType
 		vms = append(vms, vm)
 	}
 	if sortOrder == "date" {

@@ -37,6 +37,8 @@ type SeriesVM struct {
 	MissingReleasedEbook int
 	TotalReleased        int
 	ViewMode             string
+	OnlyMissing          bool
+	FilterType           string
 }
 
 // PageVM is the top-level view model for all pages.
