@@ -59,7 +59,7 @@ templ Sidebar(vm PageVM) {
 }
 
 templ SidebarSeries(vm SeriesVM) {
-	<div class="px-3.5 py-2 mx-1.5 rounded-[7px] hover:bg-[#18182a] transition-colors cursor-pointer" id={ "sidebar-" + vm.Config.SlugName }>
+	<div class="px-3.5 py-2 mx-1.5 rounded-[7px] hover:bg-[#18182a] transition-colors cursor-pointer" id={ "sidebar-" + SlugID(vm.Config.SlugName) }>
 		<a href={ templ.SafeURL("/series/" + vm.Config.SlugName) } class="block font-semibold text-[13px] text-[#eeeeff] hover:text-[#7c6ef7] no-underline">{ vm.Config.Name }</a>
 		<div class="flex gap-1.5 flex-wrap mt-0.5">
 			for _, t := range vm.Config.Types {

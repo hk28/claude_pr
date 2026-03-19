@@ -168,7 +168,7 @@ templ issueTableRow(issue IssueVM, slug string) {
 				checked?={ val }
 				hx-post={ fmt.Sprintf("/series/%s/issue/%d/state", slug, issue.Number) }
 				hx-vals={ fmt.Sprintf(`{"state":%s,"value":"%v"}`, fmt.Sprintf("%q", name), newVal) }
-				hx-target={ "#sidebar-" + slug }
+				hx-target={ "#sidebar-" + SlugID(slug) }
 				hx-swap="outerHTML"
 				title={ name }
 			/>
@@ -186,14 +186,15 @@ templ issueTableRow(issue IssueVM, slug string) {
 }
 
 templ IssueOutputCell(slug string, issue IssueVM) {
-	<td class="p-[8px_12px] border-b border-white/[.07] align-middle group-last:border-b-0 group-hover:bg-[#18182a]" id={ fmt.Sprintf("output-%s-%d", slug, issue.Number) }>
+	{{ cellID := fmt.Sprintf("output-%s-%d", SlugID(slug), issue.Number) }}
+	<td class="p-[8px_12px] border-b border-white/[.07] align-middle group-last:border-b-0 group-hover:bg-[#18182a]" id={ cellID }>
 		if issue.HasAudio {
 			if issue.OutputAudio != "" {
 				<button
 					class={ BadgeDoneBtn }
 					hx-post={ fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number) }
 					hx-vals={ `{"mediaType":"audio","action":"clear"}` }
-					hx-target={ fmt.Sprintf("#output-%s-%d", slug, issue.Number) }
+					hx-target={ "#" + cellID }
 					hx-swap="outerHTML"
 					title={ issue.OutputAudio + " — click to clear" }
 				>audio ×</button>
@@ -202,7 +203,7 @@ templ IssueOutputCell(slug string, issue IssueVM) {
 					class={ BadgePlainBtn }
 					hx-post={ fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number) }
 					hx-vals={ `{"mediaType":"audio","action":"set"}` }
-					hx-target={ fmt.Sprintf("#output-%s-%d", slug, issue.Number) }
+					hx-target={ "#" + cellID }
 					hx-swap="outerHTML"
 					title="Mark audio as in output"
 				>audio ✓</button>
@@ -214,7 +215,7 @@ templ IssueOutputCell(slug string, issue IssueVM) {
 					class={ BadgeDoneBtn }
 					hx-post={ fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number) }
 					hx-vals={ `{"mediaType":"ebook","action":"clear"}` }
-					hx-target={ fmt.Sprintf("#output-%s-%d", slug, issue.Number) }
+					hx-target={ "#" + cellID }
 					hx-swap="outerHTML"
 					title={ issue.OutputEbook + " — click to clear" }
 				>ebook ×</button>
@@ -223,7 +224,7 @@ templ IssueOutputCell(slug string, issue IssueVM) {
 					class={ BadgePlainBtn }
 					hx-post={ fmt.Sprintf("/series/%s/issue/%d/set-output", slug, issue.Number) }
 					hx-vals={ `{"mediaType":"ebook","action":"set"}` }
-					hx-target={ fmt.Sprintf("#output-%s-%d", slug, issue.Number) }
+					hx-target={ "#" + cellID }
 					hx-swap="outerHTML"
 					title="Mark ebook as in output"
 				>ebook ✓</button>

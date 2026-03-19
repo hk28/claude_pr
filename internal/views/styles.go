@@ -1,6 +1,20 @@
 package views
 
-import "time"
+import (
+	"strings"
+	"time"
+)
+
+// SlugID converts a series slug into a CSS-safe identifier by replacing
+// spaces and other characters that are invalid in CSS selectors with dashes.
+func SlugID(slug string) string {
+	return strings.Map(func(r rune) rune {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_' {
+			return r
+		}
+		return '-'
+	}, slug)
+}
 
 // DaysUntil returns the number of days from today to a "2006-01-02" date string.
 // Negative means the date is in the past.
