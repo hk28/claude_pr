@@ -1,0 +1,57 @@
+package views
+
+templ Topbar(vm PageVM) {
+	<header class="bg-[rgba(20,20,36,.7)] [backdrop-filter:blur(12px)] border-b border-white/[.07] flex items-center justify-between px-6 h-[54px] sticky top-0 z-10">
+		<div class="flex items-center gap-2.5">
+			<form
+				class="flex items-center gap-2.5"
+				hx-get="/"
+				hx-target="#main-content"
+				hx-push-url="true"
+				hx-trigger="change"
+			>
+				<select name="series" class="bg-[#18182a] text-[#eeeeff] border border-white/[.12] rounded-[7px] px-2.5 py-[5px] text-[13px] cursor-pointer focus:outline-none focus:border-[#7c6ef7]">
+					<option value="">All series</option>
+					for _, s := range vm.Series {
+						<option
+							value={ s.Config.SlugName }
+							selected?={ vm.FilterSlug == s.Config.SlugName }
+						>{ s.Config.Name }</option>
+					}
+				</select>
+				<select name="type" class="bg-[#18182a] text-[#eeeeff] border border-white/[.12] rounded-[7px] px-2.5 py-[5px] text-[13px] cursor-pointer focus:outline-none focus:border-[#7c6ef7]">
+					<option value="">All types</option>
+					<option value="audio" selected?={ vm.FilterType == "audio" }>Audio</option>
+					<option value="ebook" selected?={ vm.FilterType == "ebook" }>E-Book</option>
+				</select>
+				<label class="flex items-center gap-1.5 cursor-pointer text-[13px]">
+					<input type="checkbox" name="missing" value="1" checked?={ vm.OnlyMissing }/>
+					Pending only
+				</label>
+			</form>
+		</div>
+		<div class="flex gap-0.5 bg-[#18182a] rounded-[7px] p-0.5" id="topbar-views">
+			<a
+				class={ ViewBtnClass(vm.ViewMode == "big") }
+				data-view="big"
+				hx-get={ "/?view=big&series=" + vm.FilterSlug + "&type=" + vm.FilterType }
+				hx-target="#main-content"
+				hx-push-url="true"
+			>Big</a>
+			<a
+				class={ ViewBtnClass(vm.ViewMode == "medium") }
+				data-view="medium"
+				hx-get={ "/?view=medium&series=" + vm.FilterSlug + "&type=" + vm.FilterType }
+				hx-target="#main-content"
+				hx-push-url="true"
+			>Medium</a>
+			<a
+				class={ ViewBtnClass(vm.ViewMode == "details") }
+				data-view="details"
+				hx-get={ "/?view=details&series=" + vm.FilterSlug + "&type=" + vm.FilterType }
+				hx-target="#main-content"
+				hx-push-url="true"
+			>Details</a>
+		</div>
+	</header>
+}

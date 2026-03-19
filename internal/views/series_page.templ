@@ -1,0 +1,9 @@
+package views
+
+templ SeriesPage(vm PageVM) {
+	@Layout(vm) {
+		if vm.CurrentSeries != nil {
+			@SeriesDetail(*vm.CurrentSeries)
+		}
+	}
+}

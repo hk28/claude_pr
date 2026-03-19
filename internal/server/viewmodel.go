@@ -3,65 +3,13 @@ package server
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/hk28/prman/internal/cache"
 	"github.com/hk28/prman/internal/config"
 	"github.com/hk28/prman/internal/state"
+	"github.com/hk28/prman/internal/views"
 )
-
-// IssueVM is the per-issue view model for templates.
-type IssueVM struct {
-	Number      int
-	Title       string
-	Description string
-	Author      string
-	ReleaseDate string
-	SubSeries   string
-	CoverURL    string
-	SourceURL   string // Perrypedia page URL
-	States      map[string]bool
-	StateNames  []string // ordered list from series config
-	InboxAudio  string
-	InboxEbook  string
-	OutputAudio string
-	OutputEbook string
-	CacheExists bool
-	HasAudio    bool
-	HasEbook    bool
-}
-
-// IssueCardVM wraps an IssueVM with series context needed by issue card templates.
-type IssueCardVM struct {
-	Issue IssueVM
-	Slug  string
-}
-
-// SeriesVM is the per-series view model.
-type SeriesVM struct {
-	Config               config.SeriesConfig
-	Issues               []IssueVM
-	CoverURL             string // cover of the latest issue that has one
-	LatestReleaseDate    string // release date of the most recent cached issue
-	MissingAudio         int   // in inbox, not yet copied to output
-	MissingEbook         int
-	MissingReleasedAudio int // released but not yet in inbox
-	MissingReleasedEbook int
-	TotalReleased        int
-	ViewMode             string // inherited from page context
-}
-
-// PageVM is the top-level view model for all pages (index + series detail).
-type PageVM struct {
-	Series            []SeriesVM
-	CurrentSeries     *SeriesVM // non-nil on series detail page
-	ViewMode          string    // "big", "medium", "details"
-	FilterSlug        string
-	FilterType        string // "audio", "ebook", ""
-	OnlyMissing       bool
-	SortOrder         string // "name" or "date"
-	TotalMissingAudio int
-	TotalMissingEbook int
-}
 
 // cacheGetter is satisfied by *cache.Cache.
 type cacheGetter interface {
@@ -69,8 +17,8 @@ type cacheGetter interface {
 }
 
 // BuildSeriesVM constructs a SeriesVM from config + state + cache.
-func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter) SeriesVM {
-	vm := SeriesVM{Config: cfg}
+func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter) views.SeriesVM {
+	vm := views.SeriesVM{Config: cfg}
 
 	hasAudio := containsType(cfg.Types, "audio")
 	hasEbook := containsType(cfg.Types, "ebook")
@@ -90,7 +38,7 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 		if is == nil {
 			continue
 		}
-		iv := IssueVM{
+		iv := views.IssueVM{
 			Number:      is.Number,
 			States:      is.States,
 			StateNames:  cfg.States,
@@ -111,7 +59,7 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 			iv.SourceURL = issue.SourceURL
 			iv.CacheExists = true
 			if issue.CoverURL != "" {
-				vm.CoverURL = issue.CoverURL // keeps updating → ends up as latest issue's cover
+				vm.CoverURL = issue.CoverURL
 			}
 			if issue.ReleaseDate != "" {
 				vm.LatestReleaseDate = issue.ReleaseDate
@@ -136,6 +84,19 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 		}
 		vm.Issues = append(vm.Issues, iv)
 	}
+	if !cfg.Complete && cfg.Interval > 0 && cfg.Anchor.Date != "" {
+		if anchor, err := time.Parse("2006-01-02", cfg.Anchor.Date); err == nil {
+			today := time.Now().Truncate(24 * time.Hour)
+			daysSince := int(today.Sub(anchor.Truncate(24 * time.Hour)).Hours() / 24)
+			if daysSince >= 0 {
+				latestByDate := cfg.Anchor.Number + daysSince/cfg.Interval
+				next := latestByDate + 1
+				vm.NextIssueNumber = next
+				vm.NextReleaseDate = anchor.AddDate(0, 0, (next-cfg.Anchor.Number)*cfg.Interval).Format("2006-01-02")
+			}
+		}
+	}
+
 	return vm
 }
 

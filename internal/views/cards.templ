@@ -1,0 +1,267 @@
+package views
+
+import "fmt"
+
+// CardBig renders a series overview card (large format).
+templ CardBig(vm SeriesVM) {
+	<div class="bg-surface border border-white/[.07] rounded-xl overflow-hidden transition-all duration-[.25s] shadow-[0_2px_16px_rgba(0,0,0,.4)] hover:shadow-[0_8px_32px_rgba(124,110,247,.25),0_2px_8px_rgba(0,0,0,.5)] hover:-translate-y-[3px] hover:border-[rgba(124,110,247,.3)] w-[270px]">
+		<a href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=" + vm.ViewMode) } class="relative block no-underline">
+			if vm.CoverURL != "" {
+				<img class="w-full aspect-[3/4] object-cover block" src={ vm.CoverURL } alt={ vm.Config.Name } loading="lazy"/>
+			} else {
+				<div class="w-full aspect-[3/4] flex items-center justify-center bg-gradient-to-br from-[#18182a] to-[#10101c]">
+					if len(vm.Config.Name) >= 2 {
+						<span class="text-[28px] font-extrabold text-[#7c6ef7] opacity-40 font-mono">{ vm.Config.Name[:2] }</span>
+					}
+				</div>
+			}
+			if len(vm.Issues) > 0 {
+				<div class="absolute top-2 right-2 flex flex-col gap-0.5 items-end">
+					for _, name := range vm.Issues[0].StateNames {
+						{{ val := vm.Issues[0].States[name] }}
+						<span
+							class={
+								"text-[9px] font-bold px-[7px] py-0.5 rounded-full tracking-[.04em] backdrop-blur-sm border",
+								templ.KV("bg-[rgba(52,211,153,.25)] text-[#6ee7b7] border-[rgba(52,211,153,.5)]", val),
+								templ.KV("bg-[rgba(0,0,0,.45)] text-[rgba(255,255,255,.28)] border-[rgba(255,255,255,.08)]", !val),
+							}
+							title={ name }
+						></span>
+					}
+				</div>
+			}
+		</a>
+		<div class="p-2.5 px-3.5">
+			<a href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=" + vm.ViewMode) } class="font-bold text-[13px] text-[#eeeeff] block leading-[1.35] no-underline hover:text-[#7c6ef7] transition-colors">{ vm.Config.Name }</a>
+			<div class="flex gap-1.5 flex-wrap mt-[7px]">
+				<span class="text-[11px] text-[#7878a8]">{ fmt.Sprintf("%d issues", vm.TotalReleased) }</span>
+				for _, t := range vm.Config.Types {
+					<span class={ TypeTagClass(t) }>{ t }</span>
+				}
+			</div>
+			if vm.Config.Complete {
+				<div class="text-[11px] mt-1.5 text-[#7878a8] italic">Series is complete</div>
+			} else if vm.NextReleaseDate != "" {
+				{{ days, ok := DaysUntil(vm.NextReleaseDate) }}
+				if ok {
+					<div class="text-[11px] mt-1.5">
+						if days > 0 {
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d is released in %d days", vm.NextIssueNumber, days) }</span>
+						} else if days == 0 {
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d is released today", vm.NextIssueNumber) }</span>
+						} else {
+							<span class="text-[#7878a8]">{ fmt.Sprintf("released %d days ago", -days) }</span>
+						}
+					</div>
+				}
+			}
+			if vm.MissingAudio > 0 || vm.MissingEbook > 0 {
+				<div class="mt-1.5 flex gap-1 flex-wrap">
+					if vm.MissingAudio > 0 {
+						<span class={ BadgeWarn }>{ fmt.Sprintf("%d audio", vm.MissingAudio) }</span>
+					}
+					if vm.MissingEbook > 0 {
+						<span class={ BadgeWarn }>{ fmt.Sprintf("%d ebook", vm.MissingEbook) }</span>
+					}
+				</div>
+			}
+		</div>
+	</div>
+}
+
+// CardMedium renders a series overview card (medium format).
+templ CardMedium(vm SeriesVM) {
+	<div class="bg-surface border border-white/[.07] rounded-xl overflow-hidden transition-all duration-[.25s] shadow-[0_2px_16px_rgba(0,0,0,.4)] hover:shadow-[0_8px_32px_rgba(124,110,247,.25),0_2px_8px_rgba(0,0,0,.5)] hover:-translate-y-[3px] hover:border-[rgba(124,110,247,.3)] flex w-[460px] max-w-full">
+		<a href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=" + vm.ViewMode) } class="self-stretch no-underline shrink-0">
+			if vm.CoverURL != "" {
+				<img class="w-[140px] min-w-[140px] h-full min-h-[190px] object-cover block" src={ vm.CoverURL } alt={ vm.Config.Name } loading="lazy"/>
+			} else {
+				<div class="w-[140px] min-w-[140px] h-full min-h-[190px] flex items-center justify-center bg-gradient-to-br from-[#18182a] to-[#10101c]">
+					if len(vm.Config.Name) >= 2 {
+						<span class="text-[28px] font-extrabold text-[#7c6ef7] opacity-40 font-mono">{ vm.Config.Name[:2] }</span>
+					}
+				</div>
+			}
+		</a>
+		<div class="p-3 px-3.5 flex-1 min-w-0">
+			<a href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=" + vm.ViewMode) } class="font-bold text-[13px] text-[#eeeeff] block leading-[1.35] no-underline hover:text-[#7c6ef7] transition-colors">{ vm.Config.Name }</a>
+			<div class="flex gap-1.5 flex-wrap mt-[7px]">
+				for _, t := range vm.Config.Types {
+					<span class={ TypeTagClass(t) }>{ t }</span>
+				}
+				<span class="text-[11px] text-[#7878a8]">{ fmt.Sprintf("%d released", vm.TotalReleased) }</span>
+			</div>
+			if len(vm.Issues) > 0 {
+				{{ last := vm.Issues[len(vm.Issues)-1] }}
+				<div class="text-[11px] text-[#7878a8] mt-[3px]">
+					Latest: <strong>#{ fmt.Sprintf("%d", last.Number) }</strong>
+					if last.Title != "" {
+						— { last.Title }
+					}
+				</div>
+			}
+			if vm.Config.Complete {
+				<div class="text-[11px] mt-1 text-[#7878a8] italic">Series is complete</div>
+			} else if vm.NextReleaseDate != "" {
+				{{ days, ok := DaysUntil(vm.NextReleaseDate) }}
+				if ok {
+					<div class="text-[11px] mt-1">
+						if days > 0 {
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d is released in %d days", vm.NextIssueNumber, days) }</span>
+						} else if days == 0 {
+							<span class="text-[#34d399]">{ fmt.Sprintf("#%d is released today", vm.NextIssueNumber) }</span>
+						} else {
+							<span class="text-[#7878a8]">{ fmt.Sprintf("released %d days ago", -days) }</span>
+						}
+					</div>
+				}
+			}
+			<div class="flex gap-1.5 flex-wrap mt-2">
+				for _, name := range vm.Config.States {
+					<span class={ StatePillClass(false) }>{ name }</span>
+				}
+			</div>
+			if vm.MissingAudio > 0 || vm.MissingEbook > 0 {
+				<div class="mt-1.5 flex gap-1 flex-wrap">
+					if vm.MissingAudio > 0 {
+						<span class={ BadgeWarn }>{ fmt.Sprintf("%d audio pending", vm.MissingAudio) }</span>
+					}
+					if vm.MissingEbook > 0 {
+						<span class={ BadgeWarn }>{ fmt.Sprintf("%d ebook pending", vm.MissingEbook) }</span>
+					}
+				</div>
+			}
+		</div>
+	</div>
+}
+
+// IssueCardBig renders a single-issue card (large format).
+templ IssueCardBig(issue IssueVM, slug string) {
+	<div
+		class={
+			"bg-surface border border-white/[.07] rounded-xl overflow-hidden transition-all duration-[.25s] shadow-[0_2px_16px_rgba(0,0,0,.4)] hover:shadow-[0_8px_32px_rgba(124,110,247,.25),0_2px_8px_rgba(0,0,0,.5)] hover:-translate-y-[3px] hover:border-[rgba(124,110,247,.3)] w-[270px]",
+			templ.KV("opacity-55", !issue.States["Released"]),
+		}
+	>
+		<div
+			class="relative block"
+			if issue.CoverURL != "" {
+				data-cover-url={ issue.CoverURL }
+				data-source-url={ issue.SourceURL }
+				style="cursor:pointer"
+			}
+		>
+			if issue.CoverURL != "" {
+				<img class="w-full aspect-[3/4] object-cover block" src={ issue.CoverURL } alt={ "#" + fmt.Sprintf("%d", issue.Number) } loading="lazy"/>
+			} else {
+				<div class="w-full aspect-[3/4] flex items-center justify-center bg-gradient-to-br from-[#18182a] to-[#10101c]">
+					<span class="text-[28px] font-extrabold text-[#7c6ef7] opacity-40 font-mono">#{ fmt.Sprintf("%d", issue.Number) }</span>
+				</div>
+			}
+			<div class="absolute top-2 right-2 flex flex-col gap-0.5 items-end">
+				for _, name := range issue.StateNames {
+					{{ val := issue.States[name] }}
+					<span
+						class={
+							"text-[9px] font-bold px-[7px] py-0.5 rounded-full tracking-[.04em] backdrop-blur-sm border",
+							templ.KV("bg-[rgba(52,211,153,.25)] text-[#6ee7b7] border-[rgba(52,211,153,.5)]", val),
+							templ.KV("bg-[rgba(0,0,0,.45)] text-[rgba(255,255,255,.28)] border-[rgba(255,255,255,.08)]", !val),
+						}
+					>{ name }</span>
+				}
+			</div>
+		</div>
+		<div class="p-[9px_12px_11px]">
+			if issue.SourceURL != "" {
+				<a class="font-bold text-[13px] text-[#eeeeff] block leading-[1.35] no-underline hover:text-[#7c6ef7] transition-colors" href={ templ.SafeURL(issue.SourceURL) } target="_blank" rel="noopener">
+					<span class="font-mono text-[#7878a8]">#{ fmt.Sprintf("%d", issue.Number) }</span>
+					if issue.Title != "" {
+						— { issue.Title }
+					}
+				</a>
+			} else {
+				<div class="font-bold text-[13px] text-[#eeeeff] block leading-[1.35]">
+					<span class="font-mono text-[#7878a8]">#{ fmt.Sprintf("%d", issue.Number) }</span>
+					if issue.Title != "" {
+						— { issue.Title }
+					}
+				</div>
+			}
+			<div class="flex gap-1.5 flex-wrap mt-[5px]">
+				if issue.OutputAudio != "" {
+					<span class={ BadgeDone }>audio</span>
+				}
+				if issue.OutputEbook != "" {
+					<span class={ BadgeDone }>ebook</span>
+				}
+			</div>
+		</div>
+	</div>
+}
+
+// IssueCardMedium renders a single-issue card (medium format).
+templ IssueCardMedium(issue IssueVM, slug string) {
+	<div
+		class={
+			"bg-surface border border-white/[.07] rounded-xl overflow-hidden transition-all duration-[.25s] shadow-[0_2px_16px_rgba(0,0,0,.4)] hover:shadow-[0_8px_32px_rgba(124,110,247,.25),0_2px_8px_rgba(0,0,0,.5)] hover:-translate-y-[3px] hover:border-[rgba(124,110,247,.3)] flex w-[460px] max-w-full",
+			templ.KV("opacity-55", !issue.States["Released"]),
+		}
+	>
+		<div
+			class="self-stretch shrink-0"
+			if issue.CoverURL != "" {
+				data-cover-url={ issue.CoverURL }
+				data-source-url={ issue.SourceURL }
+				style="cursor:pointer"
+			}
+		>
+			if issue.CoverURL != "" {
+				<img class="w-[140px] min-w-[140px] h-full min-h-[190px] object-cover block" src={ issue.CoverURL } alt={ "#" + fmt.Sprintf("%d", issue.Number) } loading="lazy"/>
+			} else {
+				<div class="w-[140px] min-w-[140px] h-full min-h-[190px] flex items-center justify-center bg-gradient-to-br from-[#18182a] to-[#10101c]">
+					<span class="text-[28px] font-extrabold text-[#7c6ef7] opacity-40 font-mono">#{ fmt.Sprintf("%d", issue.Number) }</span>
+				</div>
+			}
+		</div>
+		<div class="p-3 px-3.5 flex-1 min-w-0">
+			if issue.SourceURL != "" {
+				<a class="font-bold text-[13px] text-[#eeeeff] block leading-[1.35] no-underline hover:text-[#7c6ef7] transition-colors" href={ templ.SafeURL(issue.SourceURL) } target="_blank" rel="noopener">
+					<span class="font-mono text-[#7878a8]">#{ fmt.Sprintf("%d", issue.Number) }</span>
+					if issue.Title != "" {
+						— { issue.Title }
+					}
+				</a>
+			} else {
+				<div class="font-bold text-[13px] text-[#eeeeff] block leading-[1.35]">
+					<span class="font-mono text-[#7878a8]">#{ fmt.Sprintf("%d", issue.Number) }</span>
+					if issue.Title != "" {
+						— { issue.Title }
+					}
+				</div>
+			}
+			if issue.Author != "" {
+				<div class="text-[11px] text-[#7878a8] mt-1.5 font-medium">{ issue.Author }</div>
+			}
+			if issue.ReleaseDate != "" {
+				<div class="text-[11px] text-[#3a3a60] mt-0.5">{ issue.ReleaseDate }</div>
+			}
+			if issue.Description != "" {
+				<div class="text-[11px] text-[#7878a8] mt-1.5 italic leading-[1.45] line-clamp-3">{ issue.Description }</div>
+			}
+			<div class="flex gap-1.5 flex-wrap mt-1.5">
+				for _, name := range issue.StateNames {
+					{{ val := issue.States[name] }}
+					<span class={ StatePillClass(val) }>{ name }</span>
+				}
+			</div>
+			<div class="flex gap-1.5 flex-wrap mt-1">
+				if issue.OutputAudio != "" {
+					<span class={ BadgeDone }>audio</span>
+				}
+				if issue.OutputEbook != "" {
+					<span class={ BadgeDone }>ebook</span>
+				}
+			</div>
+		</div>
+	</div>
+}

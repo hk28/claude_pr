@@ -1,0 +1,89 @@
+package views
+
+import "fmt"
+
+templ Sidebar(vm PageVM) {
+	<nav class="pb-4">
+		<div class="flex items-center gap-2.5 px-3.5 pt-4 pb-3.5 border-b border-white/[.07] sticky top-0 bg-surface z-10">
+			<a href="/" class="bg-gradient-to-br from-[#7c6ef7] to-[#a78bfa] text-white font-extrabold text-[11px] w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 no-underline shadow-[0_2px_10px_rgba(124,110,247,.25)] hover:shadow-[0_4px_18px_rgba(124,110,247,.25)] hover:scale-105 transition-[box-shadow,transform] duration-200" title="Home">PR</a>
+			<span class="text-[11px] text-[#7878a8] italic min-w-0 overflow-hidden text-ellipsis whitespace-nowrap" id="sidebar-status"></span>
+		</div>
+		<div class="flex gap-1.5 px-2.5 py-2 border-b border-white/[.07]">
+			<button
+				class={ BtnSecondary + " flex-1 px-2 py-1 text-[11px] justify-center" }
+				title="Reload config"
+				hx-post="/reload-config"
+				hx-swap="none"
+			>↺ Reload</button>
+			<button
+				class={ BtnSecondary + " flex-1 px-2 py-1 text-[11px] justify-center" }
+				title="Toggle sort order"
+				onclick="cycleSidebarSort()"
+			>
+				⇅
+				if vm.SortOrder == "date" {
+					Date
+				} else {
+					Name
+				}
+			</button>
+		</div>
+		if vm.TotalMissingAudio > 0 || vm.TotalMissingEbook > 0 {
+			<div class="border-b border-white/[.07] pb-2.5 pt-3.5">
+				<div class="text-[9px] font-bold uppercase tracking-[.12em] text-[#3a3a60] px-3.5 pb-1.5">Total Missing</div>
+				<div class="mt-1.5 flex gap-1 flex-wrap px-3.5">
+					if vm.TotalMissingAudio > 0 {
+						<span class={ BadgeError }>{ fmt.Sprintf("%d audio", vm.TotalMissingAudio) }</span>
+					}
+					if vm.TotalMissingEbook > 0 {
+						<span class={ BadgeError }>{ fmt.Sprintf("%d ebook", vm.TotalMissingEbook) }</span>
+					}
+				</div>
+			</div>
+		}
+		<div class="pt-3.5 pb-1">
+			<div class="text-[9px] font-bold uppercase tracking-[.12em] text-[#3a3a60] px-3.5 pb-1.5">Series</div>
+			for _, s := range vm.Series {
+				@SidebarSeries(s)
+			}
+		</div>
+	</nav>
+	<script>
+		function cycleSidebarSort() {
+			var url = new URL(window.location.href);
+			var cur = url.searchParams.get('sort') || 'name';
+			url.searchParams.set('sort', cur === 'name' ? 'date' : 'name');
+			window.location.href = url.toString();
+		}
+	</script>
+}
+
+templ SidebarSeries(vm SeriesVM) {
+	<div class="px-3.5 py-2 mx-1.5 rounded-[7px] hover:bg-[#18182a] transition-colors cursor-pointer" id={ "sidebar-" + vm.Config.SlugName }>
+		<a href={ templ.SafeURL("/series/" + vm.Config.SlugName) } class="block font-semibold text-[13px] text-[#eeeeff] hover:text-[#7c6ef7] no-underline">{ vm.Config.Name }</a>
+		<div class="flex gap-1.5 flex-wrap mt-0.5">
+			for _, t := range vm.Config.Types {
+				<span class={ TypeTagClass(t) }>{ t }</span>
+			}
+			if vm.TotalReleased > 0 {
+				<span class="text-[11px] text-[#7878a8]">{ fmt.Sprintf("%d released", vm.TotalReleased) }</span>
+			}
+		</div>
+		if vm.MissingReleasedAudio > 0 || vm.MissingReleasedEbook > 0 || vm.MissingAudio > 0 || vm.MissingEbook > 0 {
+			<div class="mt-1.5 flex gap-1 flex-wrap">
+				if vm.MissingReleasedAudio > 0 {
+					<span class={ BadgeError }>{ fmt.Sprintf("%d audio missing", vm.MissingReleasedAudio) }</span>
+				}
+				if vm.MissingReleasedEbook > 0 {
+					<span class={ BadgeError }>{ fmt.Sprintf("%d ebook missing", vm.MissingReleasedEbook) }</span>
+				}
+				if vm.MissingAudio > 0 {
+					<span class={ BadgeWarn }>{ fmt.Sprintf("%d audio pending", vm.MissingAudio) }</span>
+				}
+				if vm.MissingEbook > 0 {
+					<span class={ BadgeWarn }>{ fmt.Sprintf("%d ebook pending", vm.MissingEbook) }</span>
+				}
+			</div>
+		}
+	</div>
+}
