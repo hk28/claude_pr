@@ -114,6 +114,24 @@ func MissingParam(onlyMissing bool) string {
 	return ""
 }
 
+// TopbarFormAction returns the hx-get URL for the topbar filter form.
+// On a series detail page it posts back to that series; on the landing page to /.
+func TopbarFormAction(vm PageVM) string {
+	if vm.CurrentSeries != nil {
+		return "/series/" + vm.CurrentSeries.Config.SlugName
+	}
+	return "/"
+}
+
+// TopbarViewURL returns the hx-get URL for a view-mode button, preserving active filters.
+func TopbarViewURL(vm PageVM, view string) string {
+	if vm.CurrentSeries != nil {
+		slug := vm.CurrentSeries.Config.SlugName
+		return "/series/" + slug + "?view=" + view + "&type=" + vm.FilterType + MissingParam(vm.OnlyMissing)
+	}
+	return "/?view=" + view + "&series=" + vm.FilterSlug + "&type=" + vm.FilterType + MissingParam(vm.OnlyMissing)
+}
+
 // StatePillClass returns the class for a state pill.
 func StatePillClass(active bool) string {
 	base := "text-[9px] font-bold px-2 py-0.5 rounded-full border tracking-[.04em] transition-colors"

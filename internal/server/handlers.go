@@ -168,10 +168,18 @@ func (s *Server) handleSeriesDetail(w http.ResponseWriter, r *http.Request) {
 	st, _ := s.proc.State.Load(slug)
 	svm := BuildSeriesVM(cfg, st, s.proc.Cache)
 	svm.ViewMode = viewMode
+	filterType := r.URL.Query().Get("type")
+	onlyMissing := r.URL.Query().Get("missing") == "1"
 	sortOrder := r.URL.Query().Get("sort")
-	page := s.buildPageVM(viewMode, slug, "", sortOrder, false)
+	svm.FilterType = filterType
+	svm.OnlyMissing = onlyMissing
+	page := s.buildPageVM(viewMode, slug, filterType, sortOrder, onlyMissing)
 	page.CurrentSeries = &svm
-	render(w, r, views.SeriesPage(page))
+	if r.Header.Get("HX-Request") == "true" {
+		render(w, r, views.SeriesDetail(svm))
+	} else {
+		render(w, r, views.SeriesPage(page))
+	}
 }
 
 func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
