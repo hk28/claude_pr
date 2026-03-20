@@ -29,6 +29,10 @@ type SeriesConfig struct {
 	TitleIdx  bool           `yaml:"titleidx"`
 	Values    []FieldMapping `yaml:"values"`
 	Locations []Location     `yaml:"locations"`
+	// Interval is the number of days between issues, used together with Anchor
+	// to estimate the next release date. Optional: when Update() successfully
+	// fetches metadata for the next unreleased issue from the metadata source,
+	// that announced date is stored in state and takes precedence over this estimate.
 	Interval  int            `yaml:"interval"`
 	Anchor    Anchor         `yaml:"anchor"`
 	Types     []string       `yaml:"types"`

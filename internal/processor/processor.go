@@ -281,9 +281,25 @@ func (p *Processor) Update(seriesSlug string) (UpdateReport, error) {
 	}
 
 	var report UpdateReport
-	report.LatestIssue = latest
 
-	for n := cfg.ScanFrom; n <= latest; n++ {
+	var n int
+	for n = cfg.ScanFrom; ; n++ {
+		// Auto-fetch metadata for this issue if not yet cached
+		if !p.Cache.Exists(seriesSlug, n) {
+			if _, err := p.scrapeAndCache(seriesSlug, cfg, n); err != nil {
+				break
+			}
+			report.Fetched = append(report.Fetched, n)
+		}
+
+		// Check if the issue is actually released (has past or no release date)
+		issue, _ := p.Cache.Get(seriesSlug, n)
+		if issue.ReleaseDate != "" {
+			if parsed, err := time.Parse("2006-01-02", issue.ReleaseDate); err == nil && parsed.After(time.Now()) {
+				break // stop at future releases
+			}
+		}
+
 		if err := p.State.EnsureIssue(seriesSlug, n, cfg.States); err != nil {
 			return report, err
 		}
@@ -292,14 +308,30 @@ func (p *Processor) Update(seriesSlug string) (UpdateReport, error) {
 		}
 		report.MarkedCount++
 
-		// Auto-fetch metadata for this issue if not yet cached
-		if !p.Cache.Exists(seriesSlug, n) {
-			if _, err := p.scrapeAndCache(seriesSlug, cfg, n); err != nil {
-				report.FetchErrors = append(report.FetchErrors, fmt.Sprintf("#%d: %v", n, err))
-				continue
-			}
-			report.Fetched = append(report.Fetched, n)
+		if cfg.Complete && n >= cfg.Latest {
+			break
 		}
+	}
+	report.LatestIssue = n - 1
+
+	// Try to fetch metadata for the next unreleased issue to get its announced date.
+	// If the metadata source already has it, we cache it and store the release date in state.
+	// If not found (series not announced yet), we clear any previously stored next-issue data.
+	next := n
+	if next < cfg.ScanFrom {
+		next = cfg.ScanFrom
+	}
+	log.Printf("update %s: probing next issue #%d for release date", seriesSlug, next)
+	if nextIssue, err := p.scrapeAndCache(seriesSlug, cfg, next); err == nil && nextIssue.ReleaseDate != "" {
+		log.Printf("update %s: next issue #%d release date: %s", seriesSlug, next, nextIssue.ReleaseDate)
+		_ = p.State.SetNextIssue(seriesSlug, next, nextIssue.ReleaseDate)
+	} else {
+		if err != nil {
+			log.Printf("update %s: next issue #%d not available yet: %v", seriesSlug, next, err)
+		} else {
+			log.Printf("update %s: next issue #%d found but no release date", seriesSlug, next)
+		}
+		_ = p.State.SetNextIssue(seriesSlug, 0, "")
 	}
 
 	return report, nil

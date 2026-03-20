@@ -10,9 +10,11 @@ import (
 
 // SeriesState is stored at data/state/<slug>.json.
 type SeriesState struct {
-	SeriesSlug string               `json:"seriesSlug"`
-	UpdatedAt  time.Time            `json:"updatedAt"`
-	Issues     map[string]*IssueState `json:"issues"` // key is issue number as string
+	SeriesSlug           string                 `json:"seriesSlug"`
+	UpdatedAt            time.Time              `json:"updatedAt"`
+	Issues               map[string]*IssueState `json:"issues"` // key is issue number as string
+	NextIssueNumber      int                    `json:"nextIssueNumber,omitempty"`
+	NextIssueReleaseDate string                 `json:"nextIssueReleaseDate,omitempty"` // "YYYY-MM-DD"
 }
 
 type IssueState struct {
@@ -137,6 +139,18 @@ func (m *Manager) UpdateInbox(slug string, number int, mediaType string, path st
 
 func (m *Manager) ClearInbox(slug string, number int, mediaType string) error {
 	return m.UpdateInbox(slug, number, mediaType, "")
+}
+
+// SetNextIssue stores the next upcoming issue number and its announced release date.
+// Call with number=0 and date="" to clear when no upcoming issue is known.
+func (m *Manager) SetNextIssue(slug string, number int, date string) error {
+	s, err := m.Load(slug)
+	if err != nil {
+		return err
+	}
+	s.NextIssueNumber = number
+	s.NextIssueReleaseDate = date
+	return m.Save(s)
 }
 
 func (m *Manager) UpdateOutput(slug string, number int, mediaType string, path string) error {

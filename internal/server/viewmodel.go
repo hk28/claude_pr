@@ -84,18 +84,25 @@ func BuildSeriesVM(cfg config.SeriesConfig, st state.SeriesState, c cacheGetter)
 		}
 		vm.Issues = append(vm.Issues, iv)
 	}
-	if !cfg.Complete && cfg.Interval > 0 && cfg.Anchor.Date != "" {
-		if anchor, err := time.Parse("2006-01-02", cfg.Anchor.Date); err == nil {
-			today := time.Now().Truncate(24 * time.Hour)
-			daysSince := int(today.Sub(anchor.Truncate(24 * time.Hour)).Hours() / 24)
-			if daysSince >= 0 {
-				// next = smallest issue N whose release date >= today
-				next := cfg.Anchor.Number + daysSince/cfg.Interval
-				if daysSince%cfg.Interval != 0 {
-					next++
+	if !cfg.Complete {
+		// Prefer the announced release date stored by the last Update run.
+		if st.NextIssueNumber > 0 && st.NextIssueReleaseDate != "" {
+			vm.NextIssueNumber = st.NextIssueNumber
+			vm.NextReleaseDate = st.NextIssueReleaseDate
+		} else if cfg.Interval > 0 && cfg.Anchor.Date != "" {
+			// Fall back to interval-based estimate when no announced date is available.
+			if anchor, err := time.Parse("2006-01-02", cfg.Anchor.Date); err == nil {
+				today := time.Now().Truncate(24 * time.Hour)
+				daysSince := int(today.Sub(anchor.Truncate(24 * time.Hour)).Hours() / 24)
+				if daysSince >= 0 {
+					// next = smallest issue N whose release date >= today
+					next := cfg.Anchor.Number + daysSince/cfg.Interval
+					if daysSince%cfg.Interval != 0 {
+						next++
+					}
+					vm.NextIssueNumber = next
+					vm.NextReleaseDate = anchor.AddDate(0, 0, (next-cfg.Anchor.Number)*cfg.Interval).Format("2006-01-02")
 				}
-				vm.NextIssueNumber = next
-				vm.NextReleaseDate = anchor.AddDate(0, 0, (next-cfg.Anchor.Number)*cfg.Interval).Format("2006-01-02")
 			}
 		}
 	}

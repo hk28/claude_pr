@@ -205,6 +205,7 @@ func (s *Server) handleRefreshMetadata(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleClearCache(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	err := s.proc.ClearCache(slug)
+	w.Header().Set("HX-Trigger", "seriesRefresh")
 	render(w, r, views.ClearCacheResult(slug, errStr(err)))
 }
 

@@ -243,5 +243,12 @@ func normalizeDate(s string) string {
 			return year + "-" + mon + "-" + day
 		}
 	}
+	if len(parts) == 2 {
+		mon := germanMonths[parts[0]]
+		year := parts[1]
+		if mon != "" && len(year) == 4 {
+			return year + "-" + mon + "-01"
+		}
+	}
 	return s
 }
