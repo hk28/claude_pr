@@ -39,6 +39,22 @@ templ CardBig(vm SeriesVM) {
 					<span class={ TypeTagClass(t) }>{ t }</span>
 				}
 			</div>
+			if vm.MissingAudio > 0 || vm.MissingEbook > 0 || vm.MissingReleasedAudio > 0 || vm.MissingReleasedEbook > 0 {
+				<div class="mt-1.5 flex gap-1 flex-wrap">
+					if vm.MissingReleasedAudio > 0 {
+						<span class={ BadgeError }>{ fmt.Sprintf("%d audio missing", vm.MissingReleasedAudio) }</span>
+					}
+					if vm.MissingReleasedEbook > 0 {
+						<span class={ BadgeError }>{ fmt.Sprintf("%d ebook missing", vm.MissingReleasedEbook) }</span>
+					}
+					if vm.MissingAudio > 0 {
+						<span class={ BadgeWarn }>{ fmt.Sprintf("%d audio pending", vm.MissingAudio) }</span>
+					}
+					if vm.MissingEbook > 0 {
+						<span class={ BadgeWarn }>{ fmt.Sprintf("%d ebook pending", vm.MissingEbook) }</span>
+					}
+				</div>
+			}
 			if vm.Config.Complete {
 				<div class="text-[11px] mt-1.5 text-[#7878a8] italic">Series is complete</div>
 			} else if vm.NextReleaseDate != "" {
@@ -54,16 +70,6 @@ templ CardBig(vm SeriesVM) {
 						}
 					</div>
 				}
-			}
-			if vm.MissingAudio > 0 || vm.MissingEbook > 0 {
-				<div class="mt-1.5 flex gap-1 flex-wrap">
-					if vm.MissingAudio > 0 {
-						<span class={ BadgeWarn }>{ fmt.Sprintf("%d audio", vm.MissingAudio) }</span>
-					}
-					if vm.MissingEbook > 0 {
-						<span class={ BadgeWarn }>{ fmt.Sprintf("%d ebook", vm.MissingEbook) }</span>
-					}
-				</div>
 			}
 		</div>
 	</div>
@@ -100,6 +106,23 @@ templ CardMedium(vm SeriesVM) {
 					}
 				</div>
 			}
+			<div class="flex gap-1.5 flex-wrap mt-2">
+				for _, name := range vm.Config.States {
+					<span class={ StatePillClass(false) }>{ name }</span>
+				}
+				if vm.MissingReleasedAudio > 0 {
+					<span class={ BadgeError }>{ fmt.Sprintf("%d audio missing", vm.MissingReleasedAudio) }</span>
+				}
+				if vm.MissingReleasedEbook > 0 {
+					<span class={ BadgeError }>{ fmt.Sprintf("%d ebook missing", vm.MissingReleasedEbook) }</span>
+				}
+				if vm.MissingAudio > 0 {
+					<span class={ BadgeWarn }>{ fmt.Sprintf("%d audio pending", vm.MissingAudio) }</span>
+				}
+				if vm.MissingEbook > 0 {
+					<span class={ BadgeWarn }>{ fmt.Sprintf("%d ebook pending", vm.MissingEbook) }</span>
+				}
+			</div>
 			if vm.Config.Complete {
 				<div class="text-[11px] mt-1 text-[#7878a8] italic">Series is complete</div>
 			} else if vm.NextReleaseDate != "" {
@@ -115,21 +138,6 @@ templ CardMedium(vm SeriesVM) {
 						}
 					</div>
 				}
-			}
-			<div class="flex gap-1.5 flex-wrap mt-2">
-				for _, name := range vm.Config.States {
-					<span class={ StatePillClass(false) }>{ name }</span>
-				}
-			</div>
-			if vm.MissingAudio > 0 || vm.MissingEbook > 0 {
-				<div class="mt-1.5 flex gap-1 flex-wrap">
-					if vm.MissingAudio > 0 {
-						<span class={ BadgeWarn }>{ fmt.Sprintf("%d audio pending", vm.MissingAudio) }</span>
-					}
-					if vm.MissingEbook > 0 {
-						<span class={ BadgeWarn }>{ fmt.Sprintf("%d ebook pending", vm.MissingEbook) }</span>
-					}
-				</div>
 			}
 		</div>
 	</div>
