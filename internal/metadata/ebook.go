@@ -184,10 +184,11 @@ func buildUserCategoriesJSON() (string, error) {
 // GenerateOPF produces the .opf XML content for an ebook issue.
 func GenerateOPF(cfg config.SeriesConfig, issue cache.ScrapedIssue, calibreID int) (string, error) {
 	tdata := config.TemplateData{
-		Number:    issue.Number,
-		Title:     issue.Title,
-		SubSeries: issue.SubSeries,
-		Author:    issue.Author,
+		Number:      issue.Number,
+		Title:       issue.Title,
+		SubSeries:   issue.SubSeries,
+		Author:      issue.Author,
+		Description: issue.Description,
 	}
 
 	titleStr, err := config.RenderTemplate(cfg.Title, tdata)

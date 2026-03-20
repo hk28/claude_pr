@@ -63,10 +63,11 @@ type Anchor struct {
 
 // TemplateData is the data available inside config Go template strings.
 type TemplateData struct {
-	Number    int
-	Title     string
-	SubSeries string
-	Author    string
+	Number      int
+	Title       string
+	SubSeries   string
+	Author      string
+	Description string
 }
 
 func LoadMain(path string) (MainConfig, error) {

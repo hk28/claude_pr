@@ -410,6 +410,7 @@ func (p *Processor) CopyPreview(seriesSlug string) ([]CopyAction, error) {
 			tdata.Title = issue.Title
 			tdata.SubSeries = issue.SubSeries
 			tdata.Author = issue.Author
+			tdata.Description = issue.Description
 		}
 
 		subdir, err := config.RenderTemplate(cfg.Subdir, tdata)
@@ -520,16 +521,25 @@ func (p *Processor) CopyExecute(seriesSlug string, actions []CopyAction) []strin
 				errs = append(errs, fmt.Sprintf("#%d: move audio: %v", a.Number, err))
 				continue
 			}
-			log.Printf("copy audio #%d: done", a.Number)
+			log.Printf("copy audio #%d: move done", a.Number)
 			issue, hasCached := p.Cache.Get(seriesSlug, a.Number)
 			if hasCached {
+				mdPath := filepath.Join(dst, "metadata.json")
 				m, err := metadata.GenerateAudio(cfg, issue)
-				if err == nil {
+				if err != nil {
+					log.Printf("copy audio #%d: generate metadata failed: %v", a.Number, err)
+				} else {
 					b, err := metadata.MarshalAudio(m)
-					if err == nil {
-						_ = os.WriteFile(filepath.Join(dst, "metadata.json"), b, 0644)
+					if err != nil {
+						log.Printf("copy audio #%d: marshal metadata failed: %v", a.Number, err)
+					} else if err := os.WriteFile(mdPath, b, 0644); err != nil {
+						log.Printf("copy audio #%d: write metadata.json failed: %v", a.Number, err)
+					} else {
+						log.Printf("copy audio #%d: wrote %s", a.Number, mdPath)
 					}
 				}
+			} else {
+				log.Printf("copy audio #%d: no cache entry, skipping metadata.json", a.Number)
 			}
 		}
 

@@ -22,10 +22,11 @@ type AudioMetadata struct {
 // GenerateAudio produces the metadata.json content for an audiobook issue.
 func GenerateAudio(cfg config.SeriesConfig, issue cache.ScrapedIssue) (AudioMetadata, error) {
 	tdata := config.TemplateData{
-		Number:    issue.Number,
-		Title:     issue.Title,
-		SubSeries: issue.SubSeries,
-		Author:    issue.Author,
+		Number:      issue.Number,
+		Title:       issue.Title,
+		SubSeries:   issue.SubSeries,
+		Author:      issue.Author,
+		Description: issue.Description,
 	}
 
 	title, err := config.RenderTemplate(cfg.Title, tdata)
