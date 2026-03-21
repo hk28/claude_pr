@@ -1,0 +1,41 @@
+package views
+
+import "github.com/hk28/prman/internal/config"
+
+templ ArchivePage(vm PageVM, archived []config.SeriesConfig) {
+	@Layout(vm) {
+		@ArchiveContent(archived)
+	}
+}
+
+templ ArchiveContent(archived []config.SeriesConfig) {
+	<div class="max-w-[800px]">
+		<h2 class="text-[22px] font-extrabold tracking-[-0.02em] mb-6">Archive</h2>
+		if len(archived) == 0 {
+			<div class="py-[60px] text-center text-[#7878a8]">
+				<p>No archived series.</p>
+			</div>
+		} else {
+			<div class="flex flex-col gap-3">
+				for _, cfg := range archived {
+					<div class="bg-surface border border-white/[.07] rounded-xl p-[18px] flex items-center justify-between gap-4">
+						<div>
+							<span class="font-semibold text-[15px]">{ cfg.Name }</span>
+							<span class="text-[#7878a8] text-[12px] ml-2">{ cfg.SlugName }</span>
+							<div class="flex gap-1.5 mt-1">
+								for _, t := range cfg.Types {
+									<span class={ TypeTagClass(t) }>{ t }</span>
+								}
+							</div>
+						</div>
+						<button
+							class={ BtnSecondary }
+							hx-post={ "/archive/" + cfg.SlugName + "/restore" }
+							hx-confirm={ "Restore " + cfg.Name + "?" }
+						>Restore</button>
+					</div>
+				}
+			</div>
+		}
+	</div>
+}

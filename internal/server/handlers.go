@@ -41,6 +41,9 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("GET /covers/", http.StripPrefix("/covers/", http.FileServer(http.Dir(s.proc.Cache.CoversDir))))
 	mux.HandleFunc("POST /series/{slug}/clear-cache", s.handleClearCache)
+	mux.HandleFunc("POST /series/{slug}/archive", s.handleArchive)
+	mux.HandleFunc("GET /archive", s.handleArchiveList)
+	mux.HandleFunc("POST /archive/{slug}/restore", s.handleRestore)
 	mux.HandleFunc("POST /reload-config", s.handleReloadConfig)
 	return mux
 	// return requestLogger(mux)
@@ -308,6 +311,54 @@ func (s *Server) handleSetOutput(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	render(w, r, views.IssueOutputCell(slug, issueVM))
+}
+
+func (s *Server) handleArchive(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	if err := s.proc.Archive(slug, s.configDir); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	series, err := config.LoadSeries(filepath.Join(s.configDir, "series"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	s.series = series
+	s.proc.Series = series
+	w.Header().Set("HX-Redirect", "/")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) handleArchiveList(w http.ResponseWriter, r *http.Request) {
+	archived, err := config.LoadArchivedSeries(s.configDir)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if r.Header.Get("HX-Request") == "true" && r.Header.Get("HX-Target") == "main-content" {
+		render(w, r, views.ArchiveContent(archived))
+		return
+	}
+	vm := s.buildPageVM("big", "", "", "name", false)
+	render(w, r, views.ArchivePage(vm, archived))
+}
+
+func (s *Server) handleRestore(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	if err := s.proc.RestoreArchive(slug, s.configDir); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	series, err := config.LoadSeries(filepath.Join(s.configDir, "series"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	s.series = series
+	s.proc.Series = series
+	w.Header().Set("HX-Redirect", "/series/"+slug)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func errStr(err error) string {

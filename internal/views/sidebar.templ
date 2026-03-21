@@ -47,6 +47,15 @@ templ Sidebar(vm PageVM) {
 				@SidebarSeries(s)
 			}
 		</div>
+		<div class="border-t border-white/[.07] px-2.5 py-2">
+			<a
+				href="/archive"
+				class="block px-3 py-1.5 text-[12px] text-[#7878a8] hover:text-[#eeeeff] no-underline rounded-[7px] hover:bg-[#18182a] transition-colors"
+				hx-get="/archive"
+				hx-target="#main-content"
+				hx-push-url="true"
+			>Archive</a>
+		</div>
 	</nav>
 	<script>
 		function cycleSidebarSort() {

@@ -171,6 +171,47 @@ func (p *Processor) fetchAndSaveCover(slug string, number int, remoteURL string)
 	return fmt.Sprintf("/covers/%s/%d%s", slug, number, ext), true
 }
 
+// Archive moves the series YAML config and cached state to archive subdirectories.
+// Cover images are left in place.
+func (p *Processor) Archive(slug, configDir string) error {
+	srcConfig := filepath.Join(configDir, "series", slug+".yaml")
+	dstConfigDir := filepath.Join(configDir, "series", "archive")
+	if err := os.MkdirAll(dstConfigDir, 0755); err != nil {
+		return fmt.Errorf("creating archive config dir: %w", err)
+	}
+	if err := os.Rename(srcConfig, filepath.Join(dstConfigDir, slug+".yaml")); err != nil {
+		return fmt.Errorf("archiving config: %w", err)
+	}
+	srcState := filepath.Join(p.State.BaseDir, slug+".json")
+	if _, err := os.Stat(srcState); err == nil {
+		dstStateDir := filepath.Join(p.State.BaseDir, "archive")
+		if err := os.MkdirAll(dstStateDir, 0755); err != nil {
+			return fmt.Errorf("creating archive state dir: %w", err)
+		}
+		if err := os.Rename(srcState, filepath.Join(dstStateDir, slug+".json")); err != nil {
+			return fmt.Errorf("archiving state: %w", err)
+		}
+	}
+	return nil
+}
+
+// RestoreArchive moves the series YAML config and state back from the archive subdirectories.
+func (p *Processor) RestoreArchive(slug, configDir string) error {
+	srcConfig := filepath.Join(configDir, "series", "archive", slug+".yaml")
+	dstConfig := filepath.Join(configDir, "series", slug+".yaml")
+	if err := os.Rename(srcConfig, dstConfig); err != nil {
+		return fmt.Errorf("restoring config: %w", err)
+	}
+	srcState := filepath.Join(p.State.BaseDir, "archive", slug+".json")
+	if _, err := os.Stat(srcState); err == nil {
+		dstState := filepath.Join(p.State.BaseDir, slug+".json")
+		if err := os.Rename(srcState, dstState); err != nil {
+			return fmt.Errorf("restoring state: %w", err)
+		}
+	}
+	return nil
+}
+
 // ClearCache deletes the JSON metadata cache and cover images for a series.
 func (p *Processor) ClearCache(slug string) error {
 	return p.Cache.DeleteAll(slug)

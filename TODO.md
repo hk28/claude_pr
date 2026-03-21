@@ -4,16 +4,16 @@
 - [x] update/read config
 - [-] edit config files
   - [ ] new series: create inbox folder (ask)
-- [ ] restart button
-- [ ] more robust config: interval, last issue = 0,
+- [-] restart button
+- [x] more robust config: interval, last issue = 0,
 - [-] copy existing ebook: overwrite (all)
-- [ ] diff opf/json from calibre/abs
+- [x] diff opf/json from calibre/abs
 - [x] link in opf/json
 - [x] Test copy / Move???
 - [x] set outbox state
-- [ ] remove series -> metadata
-  - [ ] clear cache only for series
-- [ ] only missing filter
+- [x] remove series -> metadata
+  - [x] clear cache only for series
+- [x] only missing filter
 - [ ] docker, update, deploy
 - [ ] filter LKS, consumed
 - [ ] auto save/backup state (git?)

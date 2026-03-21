@@ -104,6 +104,29 @@ func LoadSeries(dir string) ([]SeriesConfig, error) {
 	return result, nil
 }
 
+func LoadArchivedSeries(configDir string) ([]SeriesConfig, error) {
+	archiveDir := filepath.Join(configDir, "series", "archive")
+	entries, err := filepath.Glob(filepath.Join(archiveDir, "*.yaml"))
+	if err != nil {
+		return nil, fmt.Errorf("globbing archived series: %w", err)
+	}
+	var result []SeriesConfig
+	for _, path := range entries {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("reading %s: %w", path, err)
+		}
+		var cfg SeriesConfig
+		if err := yaml.Unmarshal(data, &cfg); err != nil {
+			return nil, fmt.Errorf("parsing %s: %w", path, err)
+		}
+		base := filepath.Base(path)
+		cfg.SlugName = strings.TrimSuffix(base, ".yaml")
+		result = append(result, cfg)
+	}
+	return result, nil
+}
+
 func LoadAll(configDir string) (MainConfig, []SeriesConfig, error) {
 	main, err := LoadMain(filepath.Join(configDir, "main.yaml"))
 	if err != nil {

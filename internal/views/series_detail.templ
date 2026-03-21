@@ -53,6 +53,11 @@ templ SeriesDetail(vm SeriesVM) {
 					hx-swap="innerHTML"
 					hx-confirm="Delete all cached metadata and cover images for this series?"
 				>Clear Cache</button>
+			<button
+				class={ BtnSecondary }
+				hx-post={ "/series/" + vm.Config.SlugName + "/archive" }
+				hx-confirm={ "Archive " + vm.Config.Name + "? The config and state will be moved to the archive." }
+			>Archive</button>
 			</div>
 		</div>
 		<div id="action-result" class="mb-5"></div>
