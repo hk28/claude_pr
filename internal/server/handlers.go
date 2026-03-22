@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/hk28/prman/internal/config"
@@ -45,6 +46,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /archive", s.handleArchiveList)
 	mux.HandleFunc("POST /archive/{slug}/restore", s.handleRestore)
 	mux.HandleFunc("POST /reload-config", s.handleReloadConfig)
+	mux.HandleFunc("GET /missing-list", s.handleMissingList)
 	return mux
 	// return requestLogger(mux)
 }
@@ -359,6 +361,60 @@ func (s *Server) handleRestore(w http.ResponseWriter, r *http.Request) {
 	s.proc.Series = series
 	w.Header().Set("HX-Redirect", "/series/"+slug)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) handleMissingList(w http.ResponseWriter, r *http.Request) {
+	var sb strings.Builder
+	sb.WriteString("Missing Items\n")
+	sb.WriteString("Generated: " + time.Now().Format("2006-01-02") + "\n")
+	sb.WriteString(strings.Repeat("=", 60) + "\n\n")
+
+	totalAudio := 0
+	totalEbook := 0
+
+	for _, cfg := range s.series {
+		st, _ := s.proc.State.Load(cfg.SlugName)
+		vm := BuildSeriesVM(cfg, st, s.proc.Cache)
+
+		if vm.MissingReleasedAudio == 0 && vm.MissingReleasedEbook == 0 {
+			continue
+		}
+
+		sb.WriteString(cfg.Name + "\n")
+		sb.WriteString(strings.Repeat("-", len(cfg.Name)) + "\n")
+
+		for _, issue := range vm.Issues {
+			if !issue.States["Released"] {
+				continue
+			}
+			var missing []string
+			if issue.HasAudio && issue.InboxAudio == "" && issue.OutputAudio == "" {
+				missing = append(missing, "audio")
+				totalAudio++
+			}
+			if issue.HasEbook && issue.InboxEbook == "" && issue.OutputEbook == "" {
+				missing = append(missing, "ebook")
+				totalEbook++
+			}
+			if len(missing) == 0 {
+				continue
+			}
+			line := fmt.Sprintf("  #%d", issue.Number)
+			if issue.Title != "" {
+				line += " – " + issue.Title
+			}
+			line += " [" + strings.Join(missing, ", ") + "]\n"
+			sb.WriteString(line)
+		}
+		sb.WriteString("\n")
+	}
+
+	sb.WriteString(strings.Repeat("=", 60) + "\n")
+	sb.WriteString(fmt.Sprintf("Total missing: %d audio, %d ebook\n", totalAudio, totalEbook))
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="missing-items.txt"`)
+	fmt.Fprint(w, sb.String())
 }
 
 func errStr(err error) string {

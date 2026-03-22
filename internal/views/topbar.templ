@@ -33,7 +33,12 @@ templ Topbar(vm PageVM) {
 				</label>
 			</form>
 		</div>
-		<div class="flex gap-0.5 bg-[#18182a] rounded-[7px] p-0.5" id="topbar-views">
+		<a
+			href="/missing-list"
+			class={ BtnSecondary }
+			title="Download missing items as text file"
+		>↓ Missing List</a>
+	<div class="flex gap-0.5 bg-[#18182a] rounded-[7px] p-0.5" id="topbar-views">
 			<a
 				class={ ViewBtnClass(vm.ViewMode == "big") }
 				data-view="big"
