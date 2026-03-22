@@ -29,39 +29,57 @@ templ SeriesDetail(vm SeriesVM) {
 				</button>
 				<button
 					class={ BtnSecondary }
-					hx-post={ "/series/" + vm.Config.SlugName + "/update" }
-					hx-target="#action-result"
-					hx-swap="innerHTML"
-				>Update Released</button>
-				<button
-					class={ BtnSecondary }
-					hx-post={ "/series/" + vm.Config.SlugName + "/refresh-metadata" }
-					hx-target="#action-result"
-					hx-swap="innerHTML"
-					hx-confirm="Re-fetch metadata for all released issues? This may take a while."
-				>Update Metadata</button>
-				<button
-					class={ BtnSecondary }
 					hx-get={ "/series/" + vm.Config.SlugName + "/copy-preview" }
 					hx-target="#action-result"
 					hx-swap="innerHTML"
 				>Copy Preview</button>
-				<button
-					class={ BtnDanger }
-					hx-post={ "/series/" + vm.Config.SlugName + "/clear-cache" }
-					hx-target="#action-result"
-					hx-swap="innerHTML"
-					hx-confirm="Delete all cached metadata and cover images for this series?"
-				>Clear Cache</button>
-			<button
-				class={ BtnSecondary }
-				hx-post={ "/series/" + vm.Config.SlugName + "/archive" }
-				hx-confirm={ "Archive " + vm.Config.Name + "? The config and state will be moved to the archive." }
-			>Archive</button>
 			</div>
 		</div>
 		<div id="action-result" class="mb-5"></div>
 		@SeriesCards(vm)
+	</div>
+	@actionsPanel(vm)
+}
+
+templ actionsPanel(vm SeriesVM) {
+	<button
+		id="actions-toggle"
+		class="fixed top-1/2 -translate-y-1/2 right-0 z-30 bg-[#10101c] border border-white/[.07] border-r-0 rounded-l-[7px] px-1.5 py-4 text-[#7878a8] hover:text-[#eeeeff] transition-[right] duration-200 cursor-pointer"
+		title="Toggle actions"
+	>⚙</button>
+	<div
+		id="actions-panel"
+		class="fixed right-0 top-[54px] bottom-0 w-[210px] bg-[#10101c] border-l border-white/[.07] translate-x-full transition-transform duration-200 z-20 flex flex-col p-4 gap-2 overflow-y-auto shadow-[-8px_0_24px_rgba(0,0,0,.4)]"
+	>
+		<p class="text-[10px] font-bold uppercase tracking-[.08em] text-[#3a3a60] mb-1">Series</p>
+		<button
+			class={ BtnSecondary + " w-full justify-start" }
+			hx-post={ "/series/" + vm.Config.SlugName + "/update" }
+			hx-target="#action-result"
+			hx-swap="innerHTML"
+		>Update Released</button>
+		<button
+			class={ BtnSecondary + " w-full justify-start" }
+			hx-post={ "/series/" + vm.Config.SlugName + "/refresh-metadata" }
+			hx-target="#action-result"
+			hx-swap="innerHTML"
+			hx-confirm="Re-fetch metadata for all released issues? This may take a while."
+		>Update Metadata</button>
+		<button
+			class={ BtnDanger + " w-full justify-start" }
+			hx-post={ "/series/" + vm.Config.SlugName + "/clear-cache" }
+			hx-target="#action-result"
+			hx-swap="innerHTML"
+			hx-confirm="Delete all cached metadata and cover images for this series?"
+		>Clear Cache</button>
+		<button
+			class={ BtnSecondary + " w-full justify-start" }
+			hx-post={ "/series/" + vm.Config.SlugName + "/archive" }
+			hx-confirm={ "Archive " + vm.Config.Name + "? The config and state will be moved to the archive." }
+		>Archive</button>
+		<hr class="border-white/[.07] my-1"/>
+		<p class="text-[10px] font-bold uppercase tracking-[.08em] text-[#3a3a60] mb-1">Global</p>
+		<a href="/missing-list" class={ BtnSecondary + " w-full justify-start" }>↓ Missing List</a>
 	</div>
 }
 

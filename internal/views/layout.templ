@@ -79,6 +79,17 @@ templ Layout(vm PageVM) {
 					});
 				}
 				document.addEventListener('htmx:afterSettle', syncViewButtons);
+				function bindActionsPanel() {
+					var toggle = document.getElementById('actions-toggle');
+					var panel = document.getElementById('actions-panel');
+					if (!toggle || !panel) return;
+					toggle.onclick = function() {
+						var closed = panel.classList.toggle('translate-x-full');
+						toggle.style.right = closed ? '0' : '210px';
+					};
+				}
+				document.addEventListener('htmx:afterSettle', bindActionsPanel);
+				document.addEventListener('DOMContentLoaded', bindActionsPanel);
 				document.addEventListener('click', function(e) {
 					var el = e.target.closest('[data-cover-url]');
 					if (el) openCover(el.getAttribute('data-cover-url'), el.getAttribute('data-source-url') || '');
