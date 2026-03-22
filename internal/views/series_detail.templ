@@ -78,6 +78,14 @@ templ actionsPanel(vm SeriesVM) {
 			hx-confirm={ "Archive " + vm.Config.Name + "? The config and state will be moved to the archive." }
 		>Archive</button>
 		<hr class="border-white/[.07] my-1"/>
+		<p class="text-[10px] font-bold uppercase tracking-[.08em] text-[#3a3a60] mb-1">Metadata</p>
+		<button
+			class={ BtnSecondary + " w-full justify-start" }
+			hx-get={ "/series/" + vm.Config.SlugName + "/patch-audio-metadata-preview" }
+			hx-target="#action-result"
+			hx-swap="innerHTML"
+		>Fix Audio Series Tags</button>
+		<hr class="border-white/[.07] my-1"/>
 		<p class="text-[10px] font-bold uppercase tracking-[.08em] text-[#3a3a60] mb-1">Global</p>
 		<a href="/missing-list" class={ BtnSecondary + " w-full justify-start" }>↓ Missing List</a>
 	</div>

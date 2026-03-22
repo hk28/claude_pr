@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -681,4 +683,124 @@ func copyFile(src, dst string) error {
 	defer out.Close()
 	_, err = io.Copy(out, in)
 	return err
+}
+
+// PatchAudioMetadataAction describes one metadata.json file that may need its series tags updated.
+type PatchAudioMetadataAction struct {
+	Number    int
+	Path      string   // absolute path to metadata.json
+	OldSeries []string
+	NewSeries []string
+	Changed   bool
+}
+
+// PatchAudioMetadataReport summarises the result of a patch preview.
+type PatchAudioMetadataReport struct {
+	Actions []PatchAudioMetadataAction
+	Errors  []string
+}
+
+// PatchAudioMetadataPreview walks every audio output folder in state and computes
+// what the series tags would look like with the current generation logic.
+func (p *Processor) PatchAudioMetadataPreview(seriesSlug string) (PatchAudioMetadataReport, error) {
+	cfg, ok := p.SeriesBySlug(seriesSlug)
+	if !ok {
+		return PatchAudioMetadataReport{}, fmt.Errorf("unknown series: %s", seriesSlug)
+	}
+
+	st, err := p.State.Load(seriesSlug)
+	if err != nil {
+		return PatchAudioMetadataReport{}, err
+	}
+
+	var report PatchAudioMetadataReport
+	for _, is := range st.Issues {
+		if is.OutputAudio == "" {
+			continue
+		}
+		mdPath := filepath.Join(is.OutputAudio, "metadata.json")
+		if _, err := os.Stat(mdPath); os.IsNotExist(err) {
+			continue
+		}
+
+		data, err := os.ReadFile(mdPath)
+		if err != nil {
+			report.Errors = append(report.Errors, fmt.Sprintf("#%d: read metadata: %v", is.Number, err))
+			continue
+		}
+		var existing metadata.AudioMetadata
+		if err := json.Unmarshal(data, &existing); err != nil {
+			report.Errors = append(report.Errors, fmt.Sprintf("#%d: parse metadata: %v", is.Number, err))
+			continue
+		}
+
+		issue, hasCached := p.Cache.Get(seriesSlug, is.Number)
+		if !hasCached {
+			report.Errors = append(report.Errors, fmt.Sprintf("#%d: no cache entry", is.Number))
+			continue
+		}
+
+		newMeta, err := metadata.GenerateAudio(cfg, issue)
+		if err != nil {
+			report.Errors = append(report.Errors, fmt.Sprintf("#%d: generate metadata: %v", is.Number, err))
+			continue
+		}
+
+		report.Actions = append(report.Actions, PatchAudioMetadataAction{
+			Number:    is.Number,
+			Path:      mdPath,
+			OldSeries: existing.Series,
+			NewSeries: newMeta.Series,
+			Changed:   !seriesSliceEqual(existing.Series, newMeta.Series),
+		})
+	}
+
+	sort.Slice(report.Actions, func(i, j int) bool {
+		return report.Actions[i].Number < report.Actions[j].Number
+	})
+	return report, nil
+}
+
+// PatchAudioMetadataExecute writes updated series tags to every changed metadata.json.
+func (p *Processor) PatchAudioMetadataExecute(actions []PatchAudioMetadataAction) []string {
+	var errs []string
+	for _, a := range actions {
+		if !a.Changed {
+			continue
+		}
+		data, err := os.ReadFile(a.Path)
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("#%d: read: %v", a.Number, err))
+			continue
+		}
+		var m metadata.AudioMetadata
+		if err := json.Unmarshal(data, &m); err != nil {
+			errs = append(errs, fmt.Sprintf("#%d: parse: %v", a.Number, err))
+			continue
+		}
+		m.Series = a.NewSeries
+		b, err := metadata.MarshalAudio(m)
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("#%d: marshal: %v", a.Number, err))
+			continue
+		}
+		if err := os.WriteFile(a.Path, b, 0644); err != nil {
+			errs = append(errs, fmt.Sprintf("#%d: write: %v", a.Number, err))
+			continue
+		}
+		log.Printf("patched series tags: %s", a.Path)
+	}
+	return errs
+}
+
+func seriesSliceEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }

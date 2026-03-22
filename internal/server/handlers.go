@@ -47,6 +47,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /archive/{slug}/restore", s.handleRestore)
 	mux.HandleFunc("POST /reload-config", s.handleReloadConfig)
 	mux.HandleFunc("GET /missing-list", s.handleMissingList)
+	mux.HandleFunc("GET /series/{slug}/patch-audio-metadata-preview", s.handlePatchAudioMetadataPreview)
+	mux.HandleFunc("POST /series/{slug}/patch-audio-metadata", s.handlePatchAudioMetadata)
 	return mux
 	// return requestLogger(mux)
 }
@@ -415,6 +417,30 @@ func (s *Server) handleMissingList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Content-Disposition", `attachment; filename="missing-items.txt"`)
 	fmt.Fprint(w, sb.String())
+}
+
+func (s *Server) handlePatchAudioMetadataPreview(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	report, err := s.proc.PatchAudioMetadataPreview(slug)
+	render(w, r, views.PatchAudioMetadataPreview(slug, report, errStr(err)))
+}
+
+func (s *Server) handlePatchAudioMetadata(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	report, err := s.proc.PatchAudioMetadataPreview(slug)
+	var errs []string
+	if err != nil {
+		errs = []string{err.Error()}
+	} else {
+		errs = s.proc.PatchAudioMetadataExecute(report.Actions)
+	}
+	changed := 0
+	for _, a := range report.Actions {
+		if a.Changed {
+			changed++
+		}
+	}
+	render(w, r, views.PatchAudioMetadataResult(changed-len(errs), errs))
 }
 
 func errStr(err error) string {

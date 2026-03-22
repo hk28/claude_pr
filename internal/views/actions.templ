@@ -2,6 +2,7 @@ package views
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hk28/prman/internal/processor"
 )
@@ -184,5 +185,83 @@ templ CopyResult(count int, errors []string) {
 			</div>
 		}
 		<p>Successfully copied <strong>{ fmt.Sprintf("%d", count) }</strong> item(s).</p>
+	</div>
+}
+
+templ PatchAudioMetadataPreview(slug string, report processor.PatchAudioMetadataReport, errStr string) {
+	<div class="bg-surface border border-white/[.07] rounded-xl p-[18px] mb-3">
+		if errStr != "" {
+			<div class="bg-[rgba(248,113,113,.08)] border border-[rgba(248,113,113,.25)] text-[#f87171] rounded-[7px] p-[10px_14px]">Error: { errStr }</div>
+		} else {
+			{{ changed := 0 }}
+			for _, a := range report.Actions {
+				if a.Changed {
+					{{ changed++ }}
+				}
+			}
+			<h4 class="mb-3 text-[14px] font-bold">Fix Audio Series Tags — Preview</h4>
+			if changed == 0 && len(report.Actions) == 0 {
+				<p class="text-[#7878a8]">No audio output folders found.</p>
+			} else if changed == 0 {
+				<p class="text-[#7878a8]">All { fmt.Sprintf("%d", len(report.Actions)) } file(s) already up to date.</p>
+			} else {
+				<p class="mb-3"><strong>{ fmt.Sprintf("%d", changed) }</strong> of { fmt.Sprintf("%d", len(report.Actions)) } file(s) will be updated.</p>
+				<table class="w-full border-collapse text-[12px]">
+					<thead>
+						<tr>
+							<th class="text-left p-[6px_10px] text-[#7878a8] border-b border-white/[.07] text-[10px] uppercase tracking-[.07em]">#</th>
+							<th class="text-left p-[6px_10px] text-[#7878a8] border-b border-white/[.07] text-[10px] uppercase tracking-[.07em]">Current series tags</th>
+							<th class="text-left p-[6px_10px] text-[#7878a8] border-b border-white/[.07] text-[10px] uppercase tracking-[.07em]">New series tags</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, a := range report.Actions {
+							if a.Changed {
+								<tr>
+									<td class="p-[6px_10px] border-b border-white/[.07] font-bold text-[#7c6ef7] tabular-nums">{ fmt.Sprintf("%d", a.Number) }</td>
+									<td class="p-[6px_10px] border-b border-white/[.07] text-[#f87171]">{ strings.Join(a.OldSeries, " · ") }</td>
+									<td class="p-[6px_10px] border-b border-white/[.07] text-[#4ade80]">{ strings.Join(a.NewSeries, " · ") }</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+				<div class="mt-3.5">
+					<button
+						class={ BtnDanger }
+						hx-post={ "/series/" + slug + "/patch-audio-metadata" }
+						hx-target="#action-result"
+						hx-swap="innerHTML"
+						hx-confirm={ fmt.Sprintf("Update series tags in %d metadata.json file(s)?", changed) }
+					>Apply</button>
+				</div>
+			}
+			if len(report.Errors) > 0 {
+				<div class="text-[#f87171] text-[13px] mt-3">
+					<strong>Errors:</strong>
+					<ul>
+						for _, e := range report.Errors {
+							<li>{ e }</li>
+						}
+					</ul>
+				</div>
+			}
+		}
+	</div>
+}
+
+templ PatchAudioMetadataResult(count int, errors []string) {
+	<div class="bg-surface border border-white/[.07] rounded-xl p-[18px] mb-3">
+		if len(errors) > 0 {
+			<div class="text-[#f87171] text-[13px] mb-2">
+				<strong>{ fmt.Sprintf("%d", len(errors)) } error(s):</strong>
+				<ul>
+					for _, e := range errors {
+						<li>{ e }</li>
+					}
+				</ul>
+			</div>
+		}
+		<p>Updated series tags in <strong>{ fmt.Sprintf("%d", count) }</strong> file(s).</p>
 	</div>
 }
