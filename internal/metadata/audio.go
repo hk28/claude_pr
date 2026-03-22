@@ -49,6 +49,9 @@ func GenerateAudio(cfg config.SeriesConfig, issue cache.ScrapedIssue) (AudioMeta
 	for _, s := range strings.Split(subseries, ",") {
 		s = strings.TrimSpace(s)
 		if s != "" {
+			if !strings.Contains(s, "#") {
+				s = fmt.Sprintf("%s #%d", s, issue.Number)
+			}
 			seriesArr = append(seriesArr, s)
 		}
 	}
