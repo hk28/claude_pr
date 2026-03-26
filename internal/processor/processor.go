@@ -718,7 +718,25 @@ func (p *Processor) PatchAudioMetadataPreview(seriesSlug string) (PatchAudioMeta
 		if is.OutputAudio == "" {
 			continue
 		}
-		mdPath := filepath.Join(is.OutputAudio, "metadata.json")
+
+		audioDir := is.OutputAudio
+		if audioDir == "manual" {
+			issue, hasCached := p.Cache.Get(seriesSlug, is.Number)
+			tdata := config.TemplateData{Number: is.Number}
+			if hasCached {
+				tdata.Title = issue.Title
+				tdata.SubSeries = issue.SubSeries
+				tdata.Author = issue.Author
+				tdata.Description = issue.Description
+			}
+			subdir, err := config.RenderTemplate(cfg.Subdir, tdata)
+			if err != nil {
+				subdir = fmt.Sprintf("issue-%d", is.Number)
+			}
+			audioDir = filepath.Join(p.Main.OutputAudio, subdir)
+		}
+
+		mdPath := filepath.Join(audioDir, "metadata.json")
 		if _, err := os.Stat(mdPath); os.IsNotExist(err) {
 			continue
 		}
