@@ -155,9 +155,13 @@ func (s *Server) handleSeriesCards(w http.ResponseWriter, r *http.Request) {
 	if viewMode == "" {
 		viewMode = "details"
 	}
+	filterType := r.URL.Query().Get("type")
+	onlyMissing := r.URL.Query().Get("missing") == "1"
 	st, _ := s.proc.State.Load(slug)
 	svm := BuildSeriesVM(cfg, st, s.proc.Cache)
 	svm.ViewMode = viewMode
+	svm.FilterType = filterType
+	svm.OnlyMissing = onlyMissing
 	render(w, r, views.SeriesCards(svm))
 }
 

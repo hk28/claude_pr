@@ -12,9 +12,9 @@ templ SeriesDetail(vm SeriesVM) {
 				}
 			</div>
 			<div class="flex gap-0.5 bg-[#18182a] rounded-[7px] p-0.5">
-				<a class={ ViewBtnClass(vm.ViewMode == "big") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=big") } data-view="big">Big</a>
-				<a class={ ViewBtnClass(vm.ViewMode == "medium") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=medium") } data-view="medium">Medium</a>
-				<a class={ ViewBtnClass(vm.ViewMode == "details") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=details") } data-view="details">Details</a>
+				<a class={ ViewBtnClass(vm.ViewMode == "big") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=big&type=" + vm.FilterType + MissingParam(vm.OnlyMissing)) } data-view="big">Big</a>
+				<a class={ ViewBtnClass(vm.ViewMode == "medium") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=medium&type=" + vm.FilterType + MissingParam(vm.OnlyMissing)) } data-view="medium">Medium</a>
+				<a class={ ViewBtnClass(vm.ViewMode == "details") } href={ templ.SafeURL("/series/" + vm.Config.SlugName + "?view=details&type=" + vm.FilterType + MissingParam(vm.OnlyMissing)) } data-view="details">Details</a>
 			</div>
 			<div class="flex gap-2 ml-auto flex-wrap">
 				<button
@@ -94,7 +94,7 @@ templ actionsPanel(vm SeriesVM) {
 templ SeriesCards(vm SeriesVM) {
 	<div
 		id="series-cards"
-		hx-get={ "/series/" + vm.Config.SlugName + "/cards?view=" + vm.ViewMode }
+		hx-get={ "/series/" + vm.Config.SlugName + "/cards?view=" + vm.ViewMode + "&type=" + vm.FilterType + MissingParam(vm.OnlyMissing) }
 		hx-trigger="seriesRefresh from:body"
 		hx-swap="outerHTML"
 	>

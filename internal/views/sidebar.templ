@@ -64,6 +64,20 @@ templ Sidebar(vm PageVM) {
 			url.searchParams.set('sort', cur === 'name' ? 'date' : 'name');
 			window.location.href = url.toString();
 		}
+		document.querySelector('nav').addEventListener('click', function(e) {
+			var a = e.target.closest('a[href^="/series/"]');
+			if (!a) return;
+			var url = new URL(a.href, location.origin);
+			var cur = new URLSearchParams(location.search);
+			['missing', 'type', 'view'].forEach(function(key) {
+				var v = cur.get(key);
+				if (v) url.searchParams.set(key, v);
+			});
+			var target = url.toString();
+			if (target === a.href) return;
+			e.preventDefault();
+			window.location.href = target;
+		});
 	</script>
 }
 

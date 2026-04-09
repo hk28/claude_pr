@@ -112,9 +112,9 @@ func SeriesDetail(vm SeriesVM) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 templ.SafeURL
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/series/" + vm.Config.SlugName + "?view=big"))
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/series/" + vm.Config.SlugName + "?view=big&type=" + vm.FilterType + MissingParam(vm.OnlyMissing)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 15, Col: 119}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 15, Col: 172}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -147,9 +147,9 @@ func SeriesDetail(vm SeriesVM) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 templ.SafeURL
-		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/series/" + vm.Config.SlugName + "?view=medium"))
+		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/series/" + vm.Config.SlugName + "?view=medium&type=" + vm.FilterType + MissingParam(vm.OnlyMissing)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 16, Col: 125}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 16, Col: 178}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -182,9 +182,9 @@ func SeriesDetail(vm SeriesVM) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var14 templ.SafeURL
-		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/series/" + vm.Config.SlugName + "?view=details"))
+		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/series/" + vm.Config.SlugName + "?view=details&type=" + vm.FilterType + MissingParam(vm.OnlyMissing)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 17, Col: 127}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 17, Col: 180}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -545,9 +545,9 @@ func SeriesCards(vm SeriesVM) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var41 string
-		templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs("/series/" + vm.Config.SlugName + "/cards?view=" + vm.ViewMode)
+		templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs("/series/" + vm.Config.SlugName + "/cards?view=" + vm.ViewMode + "&type=" + vm.FilterType + MissingParam(vm.OnlyMissing))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 97, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/series_detail.templ`, Line: 97, Col: 131}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 		if templ_7745c5c3_Err != nil {
