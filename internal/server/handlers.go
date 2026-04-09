@@ -203,17 +203,27 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleUpdateAll(w http.ResponseWriter, r *http.Request) {
 	var totalMarked int
-	var errs []string
+	var fetchErrs []string
+	var siteDown bool
 	for _, cfg := range s.series {
+		if siteDown {
+			break
+		}
 		report, err := s.proc.UpdateQuick(cfg.SlugName)
+		totalMarked += report.MarkedCount
 		if err != nil {
-			errs = append(errs, cfg.Name+": "+err.Error())
-		} else {
-			totalMarked += report.MarkedCount
+			fetchErrs = append(fetchErrs, cfg.Name+": "+err.Error())
+			siteDown = true
+		} else if len(report.FetchErrors) > 0 {
+			for _, fe := range report.FetchErrors {
+				fetchErrs = append(fetchErrs, cfg.Name+" "+fe)
+			}
+			// A fetch error on the frontier likely means the site is unreachable
+			siteDown = true
 		}
 	}
 	w.Header().Set("HX-Trigger", "seriesRefresh")
-	render(w, r, views.UpdateAllResult(totalMarked, errs))
+	render(w, r, views.UpdateAllResult(totalMarked, fetchErrs))
 }
 
 func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {

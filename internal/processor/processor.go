@@ -352,6 +352,7 @@ func (p *Processor) update(seriesSlug string, startFrom int) (UpdateReport, erro
 		// Auto-fetch metadata for this issue if not yet cached
 		if !p.Cache.Exists(seriesSlug, n) {
 			if _, err := p.scrapeAndCache(seriesSlug, cfg, n); err != nil {
+				report.FetchErrors = append(report.FetchErrors, fmt.Sprintf("#%d: %v", n, err))
 				break
 			}
 			report.Fetched = append(report.Fetched, n)

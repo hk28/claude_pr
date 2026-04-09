@@ -49,7 +49,16 @@ templ ScanPreview(report processor.ScanReport, errStr string) {
 templ UpdateAllResult(totalMarked int, errs []string) {
 	<div id="update-all-result" class="px-3.5 py-2 text-[11px]">
 		if len(errs) > 0 {
-			<span class="text-[#f87171]">{ fmt.Sprintf("%d marked, %d error(s)", totalMarked, len(errs)) }</span>
+			<div class="text-[#f87171] flex flex-col gap-1">
+				<span class="font-semibold">
+					if totalMarked > 0 {
+						{ fmt.Sprintf("%d marked — fetch error:", totalMarked) }
+					} else {
+						Fetch error:
+					}
+				</span>
+				<span class="text-[10px] opacity-80 break-all">{ strings.Join(errs, "; ") }</span>
+			</div>
 		} else {
 			<span class="text-[#34d399]">{ fmt.Sprintf("Updated — %d marked released", totalMarked) }</span>
 		}
