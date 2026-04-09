@@ -6,8 +6,20 @@ templ Sidebar(vm PageVM) {
 	<nav class="pb-4">
 		<div class="flex items-center gap-2.5 px-3.5 pt-4 pb-3.5 border-b border-white/[.07] sticky top-0 bg-surface z-10">
 			<a href="/" class="bg-gradient-to-br from-[#7c6ef7] to-[#a78bfa] text-white font-extrabold text-[11px] w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 no-underline shadow-[0_2px_10px_rgba(124,110,247,.25)] hover:shadow-[0_4px_18px_rgba(124,110,247,.25)] hover:scale-105 transition-[box-shadow,transform] duration-200" title="Home">PR</a>
+			<button
+				class="text-[#7878a8] hover:text-[#eeeeff] w-[26px] h-[26px] rounded-[6px] flex items-center justify-center shrink-0 border border-white/[.07] bg-[#18182a] hover:bg-[rgba(255,255,255,.07)] transition-colors cursor-pointer text-[13px]"
+				title="Update Released (all series)"
+				hx-post="/update-all"
+				hx-target="#update-all-result"
+				hx-swap="outerHTML"
+				hx-indicator="#update-all-spinner"
+			>
+				<span class="htmx-indicator animate-spin" id="update-all-spinner">⟳</span>
+				<span class="htmx-no-request">↻</span>
+			</button>
 			<span class="text-[11px] text-[#7878a8] italic min-w-0 overflow-hidden text-ellipsis whitespace-nowrap" id="sidebar-status"></span>
 		</div>
+		<div id="update-all-result"></div>
 		<div class="flex gap-1.5 px-2.5 py-2 border-b border-white/[.07]">
 			<button
 				class={ BtnSecondary + " flex-1 px-2 py-1 text-[11px] justify-center" }

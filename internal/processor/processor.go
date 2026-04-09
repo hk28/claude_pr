@@ -313,9 +313,31 @@ type UpdateReport struct {
 // Update calculates which issues should be released, marks them in state,
 // and auto-fetches metadata for newly released issues that are not yet cached.
 func (p *Processor) Update(seriesSlug string) (UpdateReport, error) {
+	return p.update(seriesSlug, 0)
+}
+
+// UpdateQuick is like Update but starts scanning from the last already-released
+// issue, skipping the full scan from ScanFrom. Used for bulk "update all" where
+// re-scanning thousands of cached issues would be too slow.
+func (p *Processor) UpdateQuick(seriesSlug string) (UpdateReport, error) {
+	st, _ := p.State.Load(seriesSlug)
+	startFrom := 0
+	for _, is := range st.Issues {
+		if is.States["Released"] && is.Number > startFrom {
+			startFrom = is.Number
+		}
+	}
+	return p.update(seriesSlug, startFrom)
+}
+
+func (p *Processor) update(seriesSlug string, startFrom int) (UpdateReport, error) {
 	cfg, ok := p.SeriesBySlug(seriesSlug)
 	if !ok {
 		return UpdateReport{}, fmt.Errorf("unknown series: %s", seriesSlug)
+	}
+
+	if startFrom < cfg.ScanFrom {
+		startFrom = cfg.ScanFrom
 	}
 
 	latest := cfg.Latest
@@ -326,7 +348,7 @@ func (p *Processor) Update(seriesSlug string) (UpdateReport, error) {
 	var report UpdateReport
 
 	var n int
-	for n = cfg.ScanFrom; ; n++ {
+	for n = startFrom; ; n++ {
 		// Auto-fetch metadata for this issue if not yet cached
 		if !p.Cache.Exists(seriesSlug, n) {
 			if _, err := p.scrapeAndCache(seriesSlug, cfg, n); err != nil {

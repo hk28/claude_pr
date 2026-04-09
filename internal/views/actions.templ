@@ -46,6 +46,16 @@ templ ScanPreview(report processor.ScanReport, errStr string) {
 	</div>
 }
 
+templ UpdateAllResult(totalMarked int, errs []string) {
+	<div id="update-all-result" class="px-3.5 py-2 text-[11px]">
+		if len(errs) > 0 {
+			<span class="text-[#f87171]">{ fmt.Sprintf("%d marked, %d error(s)", totalMarked, len(errs)) }</span>
+		} else {
+			<span class="text-[#34d399]">{ fmt.Sprintf("Updated — %d marked released", totalMarked) }</span>
+		}
+	</div>
+}
+
 templ UpdateResult(report processor.UpdateReport, errStr string) {
 	<div class="bg-surface border border-white/[.07] rounded-xl p-[18px] mb-3">
 		if errStr != "" {

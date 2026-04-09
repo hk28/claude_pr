@@ -45,6 +45,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /series/{slug}/archive", s.handleArchive)
 	mux.HandleFunc("GET /archive", s.handleArchiveList)
 	mux.HandleFunc("POST /archive/{slug}/restore", s.handleRestore)
+	mux.HandleFunc("POST /update-all", s.handleUpdateAll)
 	mux.HandleFunc("POST /reload-config", s.handleReloadConfig)
 	mux.HandleFunc("GET /missing-list", s.handleMissingList)
 	mux.HandleFunc("GET /series/{slug}/patch-audio-metadata-preview", s.handlePatchAudioMetadataPreview)
@@ -198,6 +199,21 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 	report, err := s.proc.Scan(slug)
 	w.Header().Set("HX-Trigger", "seriesRefresh")
 	render(w, r, views.ScanPreview(report, errStr(err)))
+}
+
+func (s *Server) handleUpdateAll(w http.ResponseWriter, r *http.Request) {
+	var totalMarked int
+	var errs []string
+	for _, cfg := range s.series {
+		report, err := s.proc.UpdateQuick(cfg.SlugName)
+		if err != nil {
+			errs = append(errs, cfg.Name+": "+err.Error())
+		} else {
+			totalMarked += report.MarkedCount
+		}
+	}
+	w.Header().Set("HX-Trigger", "seriesRefresh")
+	render(w, r, views.UpdateAllResult(totalMarked, errs))
 }
 
 func (s *Server) handleUpdate(w http.ResponseWriter, r *http.Request) {
